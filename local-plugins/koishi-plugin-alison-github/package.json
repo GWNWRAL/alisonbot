@@ -1,0 +1,13 @@
+{
+    "version":  "0.0.1",
+    "name":  "koishi-plugin-alison-github",
+    "files":  [
+                  "lib"
+              ],
+    "description":  "Alison 去开源平台找插件、装插件、改自己的结构",
+    "peerDependencies":  {
+                             "koishi":  "^4.18.0"
+                         },
+    "license":  "MIT",
+    "main":  "lib/index.cjs"
+}

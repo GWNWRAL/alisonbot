@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Alison.app —— 双击这里（Finder 里就是"Alison"图标）
+DIR="$(cd "$(dirname "$0")/../../.." && pwd)"     # 回到包根目录
+chmod +x "$DIR/Alison 一键部署.command" 2>/dev/null || true
+exec "$DIR/Alison 一键部署.command"

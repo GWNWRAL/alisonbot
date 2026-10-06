@@ -1,0 +1,60 @@
+{
+  "name": "alisonbot",
+  "private": true,
+  "version": "0.0.1",
+  "description": "AlisonBot：微内核 + 一切皆插件的自托管聊天机器人（Koishi 内核 / ChatLuna / 多平台插件兼容）",
+  "packageManager": "yarn@4.1.1",
+  "scripts": {
+    "start": "koishi start"
+  },
+  "dependencies": {
+    "@koishijs/plugin-commands": "3.5.5",
+    "@koishijs/plugin-database-sqlite": "4.7.0",
+    "@koishijs/plugin-http": "0.6.3",
+    "@koishijs/plugin-logger": "2.6.9",
+    "@koishijs/plugin-proxy-agent": "0.3.3",
+    "@koishijs/plugin-server": "3.2.9",
+    "koishi": "4.18.11",
+    "koishi-plugin-adapter-onebot": "6.9.4",
+    "koishi-plugin-alison-autonomy": "file:./local-plugins/koishi-plugin-alison-autonomy",
+    "koishi-plugin-alison-core": "file:./local-plugins/koishi-plugin-alison-core",
+    "koishi-plugin-alison-github": "file:./local-plugins/koishi-plugin-alison-github",
+    "koishi-plugin-alison-hotreload": "file:./local-plugins/koishi-plugin-alison-hotreload",
+    "koishi-plugin-alison-onboarding": "file:./local-plugins/koishi-plugin-alison-onboarding",
+    "koishi-plugin-alison-persona": "file:./local-plugins/koishi-plugin-alison-persona",
+    "koishi-plugin-alison-platform-web": "file:./local-plugins/koishi-plugin-alison-platform-web",
+    "koishi-plugin-alison-toolprompt": "file:./local-plugins/koishi-plugin-alison-toolprompt",
+    "koishi-plugin-alison-update": "file:./local-plugins/koishi-plugin-alison-update",
+    "koishi-plugin-assets-local": "3.3.2",
+    "koishi-plugin-chatluna": "1.4.0",
+    "koishi-plugin-chatluna-character": "0.0.234",
+    "koishi-plugin-chatluna-deepseek-adapter": "1.4.1",
+    "koishi-plugin-chatluna-embeddings-service": "1.4.0",
+    "koishi-plugin-chatluna-intern-ai-adapter": "file:./local-plugins/koishi-plugin-chatluna-intern-ai-adapter",
+    "koishi-plugin-chatluna-livingmemory": "0.24.9",
+    "koishi-plugin-chatluna-mcp-client": "^1.3.4",
+    "koishi-plugin-chatluna-plugin-common": "1.4.0",
+    "koishi-plugin-chatluna-qwen-adapter": "1.4.0",
+    "koishi-plugin-chatluna-storage-service": "1.0.7",
+    "koishi-plugin-chatluna-toolbox": "0.0.23",
+    "koishi-plugin-chatluna-vector-store-service": "1.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GWNWRAL/alisonbot.git"
+  },
+  "homepage": "https://github.com/GWNWRAL/alisonbot",
+  "bugs": {
+    "url": "https://github.com/GWNWRAL/alisonbot/issues"
+  },
+  "keywords": [
+    "koishi",
+    "chatluna",
+    "alisonbot",
+    "qq-bot",
+    "roleplay",
+    "mcp",
+    "astrbot",
+    "nonebot2"
+  ]
+}

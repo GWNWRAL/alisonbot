@@ -1,0 +1,32 @@
+{
+  "name": "koishi-plugin-alison-persona",
+  "version": "0.1.0",
+  "description": "Alison 的人设插件：列出/切换/编辑/生效人设（网页与 QQ 两侧同步），并给 Alison 一个自我调整人设的工具",
+  "main": "lib/index.cjs",
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "koishi",
+    "koishi-plugin",
+    "chatluna",
+    "alison",
+    "persona"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "koishi": "^4.18.0"
+  },
+  "koishi": {
+    "category": "ai",
+    "description": {
+      "zh": "Alison 人设插件：列出/切换/编辑/生效人设，支持热切换",
+      "en": "Alison persona plugin: list/switch/edit/apply personas with hot switching"
+    },
+    "service": {
+      "required": [
+        "server"
+      ]
+    }
+  }
+}

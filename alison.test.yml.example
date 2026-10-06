@@ -1,0 +1,239 @@
+prefix:
+  - "/Alison "
+prefixMode: auto
+nickname:
+  - Alison
+  - 冰
+  - 栤
+autoAssign: true
+autoAuthorize: 1
+minSimilarity: 1
+i18n:
+  locales:
+    - zh-CN
+  output: prefer-channel
+delay:
+  character: 0
+  message: 100
+  cancel: 0
+  broadcast: 500
+  prompt: 60000
+maxListeners: 64
+timezoneOffset: -480
+stackTraceLimit: 10
+plugins:
+  alison-github:gh1: {}
+  alison-core:core1: {}
+  alison-onboarding:onb1: {}
+  alison-persona:persona1: {}
+  alison-update:upd1: {}
+  alison-toolprompt:tp1: {}
+  ~chatluna-intern-ai-adapter:internai1: {}
+  chatluna-mcp-client:mcp1: {}
+  alison-autonomy:auto1: {}
+  group:server:
+    server:c78oux:
+      port: 5199
+      maxPort: 5199
+      selfUrl: http://127.0.0.1:5199
+  group:basic:
+    commands:swswfa:
+      钓鱼.签到:
+        aliases:
+          签到: null
+      help:
+        aliases:
+          帮助: null
+          菜单: null
+    http:1vghss: {}
+    proxy-agent:257ni1: {}
+  group:console:
+    logger:4djnat: {}
+  group:storage:
+    database-sqlite:li4jpr:
+      path: data/koishi.db
+    assets-local:3hmord: {}
+  group:adapter:
+    adapter-onebot:e493zw:
+      selfId: "1000000001"
+      token: 
+  group:5lwh91:
+    chatluna:vrb1f4:
+      botNames:
+        - Ice
+        - 栤
+        - 冰师傅
+        - Alison
+      defaultModel: deepseek/deepseek-flash
+      defaultChatMode: chat
+      defaultPreset: Alison
+      randomReplyFrequency: 0.03
+      defaultEmbeddings: qwen/text-embedding-v3
+      defaultVectorStore: luna-vdb
+      attachForwardMsgIdToContext: true
+      enablePresetKeywordTrigger: false
+      sendThinkingMessage: false
+      isNickNameWithContent: true
+    chatluna-character:3zkcgm:
+      apiKeys: []
+      globalPrivateConfig:
+        model: deepseek/deepseek-flash
+        messageWaitTime: 1
+        idleTrigger: {}
+        typingTime: 100
+        preset: Alison
+        image: true
+        coolDownTime: 1
+        toolCallReplyWakeUpReply: false
+        toolCallProgressMessage: false
+        modelCompletionCount: 0
+        maxMessages: 30
+        maxTokens: 8000
+      globalGroupConfig:
+        idleTrigger: {}
+        model: deepseek/deepseek-flash
+        preset: Alison
+        isAt: true
+        messageActivityScoreUpperLimit: 0.8
+        messageActivityScoreLowerLimit: 0.6
+        messageInterval: 300
+        enableActivityScoreTrigger: false
+        image: true
+        isForceMute: true
+        typingTime: 100
+        modelCompletionCount: 0
+        maxMessages: 100
+        maxTokens: 8000
+        coolDownTime: 1
+        toolCallReplyWakeUpReply: false
+        toolCallProgressMessage: false
+        muteTime: 300
+        messageWaitTime: 1
+      groupWhitelistMode: false
+      privateWhitelistMode: false
+    chatluna-vector-store-service:wn1dtg: {}
+    ~chatluna-livingmemory:ethhp6:
+      enableRecallQueryRewrite: true
+      recallInterval: 2
+      longMemoryExtractModel: deepseek/deepseek-flash
+      emgasExtractModel: deepseek/deepseek-flash
+      hippoSimilarityThreshold: 0.5
+      layerEngines:
+        - layer: User
+          engine: Basic
+        - layer: Global
+          engine: Basic
+        - layer: Guild
+          engine: Basic
+        - layer: Preset
+          engine: Basic
+      hippoExtractModel: deepseek/deepseek-flash
+      embeddingModel: qwen/text-embedding-v3
+      rerankModel: qwen-rerank/xop3qwen8breranker
+      mainModel: deepseek/deepseek-flash
+      subModel: qwen/qwen-vl-plus
+      memorySearchMinSimilarity: 0.25
+      enableMemoryCreationTool: true
+      memorySearchToolMaxResults: 8
+      memoryCreateToolMaxMemories: 8
+      enableUserProfileInjection: true
+      enableConversationIsolation: true
+    chatluna-qwen-adapter:89yuyf:
+      apiKeys: []
+      additionalModels:
+        - model: qwen3.7-plus
+        - model: qwen3.7-flash-2026-07-15
+        - model: qwen3.7-flash-2026-07-15-non-thinking
+          modelCapabilities:
+            - image_input
+        - model: deepseek-v4-flash-0731
+        - model: qwen-image-3.0-pro
+          modelCapabilities:
+            - image_input
+        - model: qwen3.7-flash
+          modelCapabilities:
+            - tool_call
+            - image_input
+        - model: qwen3.7-flash-non-thinking
+          modelCapabilities:
+            - tool_call
+            - image_input
+        - model: qwen3.7-max-2026-06-08
+        - model: qwen3.8-max
+          modelCapabilities:
+            - image_input
+        - model: qwen3.7-text-embedding
+          modelType: Embeddings 嵌入模型
+        - model: qwen-flash
+          modelCapabilities:
+            - tool_call
+        - model: qwen-vl-plus
+          modelCapabilities:
+            - tool_call
+            - image_input
+        - model: text-embedding-v3
+          modelType: Embeddings 嵌入模型
+          contextSize: 8192
+        - model: qwen-image-2.0-pro-2026-06-22
+          modelCapabilities:
+            - image_input
+        - model: qwen3.5-ocr
+          modelCapabilities:
+            - tool_call
+            - image_input
+    chatluna-storage-service:mzp62p:
+      apiKeys: []
+      storageBackend: local
+      maxStorageSize: 1024
+      maxStorageCount: 1024
+      tempCacheTime: 900
+    chatluna-deepseek-adapter:v2ku38:
+      apiKeys: []
+      maxContextRatio: 0.25
+      temperature: 1
+    chatluna-toolbox:lt06st:
+      enabledNativeTools:
+        - poke
+        - setMsgEmoji
+        - deleteMessage
+      enablePokeXmlTool: false
+      enableDeleteXmlTool: false
+      enableBanXmlTool: false
+      enableEmojiXmlTool: false
+      injectXmlToolAsReplyTool: false
+    chatluna-embeddings-service:sunfju: {}
+    chatluna-plugin-common:4euswv:
+      music: false
+      todos: false
+      musicSelector:
+        - 音乐
+        - music
+        - 歌曲
+        - song
+        - 音频
+        - audio
+        - 创作
+        - create
+        - 生成
+        - generate
+        - 唱
+        - 朗诵
+    alison-platform-web:webui1:
+      path: /alison
+      model: deepseek/deepseek-flash
+      title: Alison
+  group:iceself:
+    alison-hotreload:selfop1:
+      enabled: true
+      requireOwner: true
+      ownerIds:
+        - "1000000001"
+      defaultDelaySeconds: 12
+      allowHardKillFallback: false
+request: {}
+daemon:
+  autoRestart: true
+  heartbeatInterval: 0
+  heartbeatTimeout: 0
+logger:
+  showTime: true

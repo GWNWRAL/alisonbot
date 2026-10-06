@@ -1,0 +1,38 @@
+{
+  "name": "koishi-plugin-chatluna-intern-ai-adapter",
+  "version": "0.1.0",
+  "description": "ChatLuna adapter for the intern-ai OpenAI-compatible gateway: stable prompt_cache_key + metadata-driven capabilities",
+  "main": "lib/index.cjs",
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "koishi",
+    "koishi-plugin",
+    "chatluna",
+    "adapter",
+    "intern-ai",
+    "openai",
+    "prompt-cache"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "koishi": "^4.18.0",
+    "koishi-plugin-chatluna": "^1.4.0"
+  },
+  "koishi": {
+    "category": "ai",
+    "description": {
+      "zh": "ChatLuna 的 intern-ai 网关适配器（稳定 prompt_cache_key，提高缓存命中率）",
+      "en": "intern-ai gateway adapter for ChatLuna (stable prompt_cache_key)"
+    },
+    "service": {
+      "required": [
+        "chatluna"
+      ]
+    }
+  }
+}

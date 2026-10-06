@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/png" href="/alison/icon.png" />
+<title>Alison</title>
+<style>
+  :root{
+    --bg:#0e1014; --panel:#161922; --panel-2:#1c2029; --line:#262b36;
+    --text:#e8eaf0; --dim:#8b93a7; --accent:#a78bfa; --accent-2:#7c9cff;
+    --ok:#4ade80; --warn:#fbbf24; --bad:#f87171; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,"Segoe UI","Noto Sans SC",sans-serif;display:flex;overflow:hidden}
+  button,input,select,textarea{font:inherit;color:inherit}
+
+  /* ---------------- 左侧栏 ---------------- */
+  #side{width:370px;min-width:300px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column}
+  #brand{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line)}
+  #brand .logo{width:30px;height:30px;border-radius:9px;background:url('/alison/icon.png') center/cover no-repeat;display:grid;place-items:center;font-weight:700;color:transparent;font-size:0}
+  #brand .t{font-weight:600;letter-spacing:.3px}
+  #brand .s{font-size:11px;color:var(--dim)}
+  #nav{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  #nav button{flex:1;padding:8px 6px;border-radius:9px;border:1px solid transparent;background:transparent;color:var(--dim);cursor:pointer;font-size:12.5px}
+  #nav button:hover{background:var(--panel-2);color:var(--text)}
+  #nav button.on{background:linear-gradient(135deg,rgba(167,139,250,.22),rgba(124,156,255,.18));border-color:rgba(167,139,250,.45);color:#fff}
+  #panel{flex:1;overflow-y:auto;padding:14px}
+  #panel::-webkit-scrollbar,#msgs::-webkit-scrollbar{width:8px}
+  #panel::-webkit-scrollbar-thumb,#msgs::-webkit-scrollbar-thumb{background:#2b3040;border-radius:8px}
+
+  .card{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+  .h{font-size:12px;color:var(--dim);margin-bottom:8px;letter-spacing:.4px;text-transform:uppercase}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:#12151c;border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+  .stat .v{font-family:var(--mono);font-size:16px;font-weight:600}
+  .stat .k{font-size:11px;color:var(--dim)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{text-align:left;padding:5px 4px;border-bottom:1px solid #23283390;white-space:nowrap}
+  th{color:var(--dim);font-weight:500}
+  td.num,th.num{text-align:right;font-family:var(--mono)}
+  .muted{color:var(--dim)}
+  .tag{display:inline-block;padding:1px 6px;border-radius:6px;background:#20242f;color:var(--dim);font-size:11px}
+  .good{color:var(--ok)}.mid{color:var(--warn)}.low{color:var(--bad)}
+  .row{display:flex;gap:8px;align-items:center}
+  .row>*{flex:1}
+  label.f{display:block;margin:10px 0 4px;font-size:12px;color:var(--dim)}
+  input[type=text],input[type=number],select,textarea{width:100%;background:#12151c;border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:120px;font-family:var(--mono);font-size:12px;line-height:1.5}
+  .btn{background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;border-radius:9px;padding:8px 14px;color:#0e1014;font-weight:600;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:500}
+  .btn.sm{padding:5px 9px;font-size:12px}
+  .bars{display:flex;align-items:flex-end;gap:2px;height:56px;margin-top:6px}
+  .bars i{flex:1;background:linear-gradient(180deg,var(--accent),#4c4f9e);border-radius:2px;min-height:2px}
+  .ident{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+  .ident input{flex:1}
+
+  /* ---------------- 聊天区 ---------------- */
+  #main{flex:1;display:flex;flex-direction:column;min-width:0}
+  #head{height:56px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--line);background:var(--panel)}
+  #head .who{font-size:12px;color:var(--dim)}
+  #head select{width:auto;min-width:180px;padding:6px 10px}
+  #msgs{flex:1;overflow-y:auto;padding:22px 26px;display:flex;flex-direction:column;gap:16px}
+  .msg{display:flex;gap:10px;max-width:min(860px,88%)}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .av{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .msg.ice .av{background:url('/alison/icon.png') center/cover no-repeat;color:transparent;font-size:0}
+  .msg.me .av{background:#2a2f3d;color:var(--text)}
+  .bub{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;white-space:pre-wrap;word-break:break-word}
+  .msg.me .bub{background:#20263a;border-color:#2d3550}
+  .bub code{font-family:var(--mono);background:#0f1218;padding:1px 5px;border-radius:5px;font-size:12.5px}
+  .meta{font-size:11px;color:var(--dim);margin-top:6px;font-family:var(--mono)}
+  #composer{border-top:1px solid var(--line);background:var(--panel);padding:12px 18px;display:flex;gap:10px;align-items:flex-end}
+  #input{flex:1;min-height:44px;max-height:180px;background:#12151c;border:1px solid var(--line);border-radius:12px;padding:11px 13px;resize:none;outline:none}
+  #hint{font-size:11px;color:var(--dim);padding:0 18px 10px;background:var(--panel)}
+  .typing i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--dim);margin-right:3px;animation:b 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  @keyframes b{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+  .empty{color:var(--dim);text-align:center;margin:auto;font-size:13px}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div id="brand"><div class="logo">Alison</div><div><div class="t" id="brandTitle">Alison</div><div class="s">Koishi · ChatLuna</div></div></div>
+  <div id="nav">
+    <button data-tab="control" class="on">控制中心</button>
+    <button data-tab="settings">系统设置</button>
+  </div>
+  <div id="panel"></div>
+</aside>
+
+<main id="main">
+  <div id="head">
+    <div style="flex:1">
+      <div class="who">你的身份</div>
+      <div class="row" style="gap:8px">
+        <select id="identity"></select>
+        <button class="btn ghost sm" id="addIdentity" title="新增身份">＋</button>
+        <button class="btn ghost sm" id="clearChat" title="清空当前对话">清空</button>
+      <button class="btn ghost sm" id="restartMe" title="重启 Alison（约 5 秒后自动回来）" onclick="restartMe()">重启我</button>
+      </div>
+    </div>
+  </div>
+  <div id="obBanner" style="display:none"></div>
+  <div id="msgs"><div class="empty">选好你的身份，跟 Alison 说句话吧</div></div>
+  <div id="composer">
+    <textarea id="input" placeholder="输入消息，Enter 发送 / Shift+Enter 换行"></textarea>
+    <button class="btn" id="send">发送</button>
+    <button class="btn ghost" id="stop" style="display:none">停止</button>
+  </div>
+  <div id="hint"></div>
+</main>
+
+<script>
+const API = location.pathname.replace(/\/+$/,'');
+let BOOT = null, TAB = 'tokens', ABORT = null, IDENTITY = null, BUSY = false, TOOLS = null;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s??'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// 兜底：人设输出契约里的 <output><message>… 结构在网页里还原成纯文本
+function clean(text){
+  let t = String(text ?? '');
+  const msgs = [...t.matchAll(/<message[^>]*>([\s\S]*?)<\/message>/g)].map(m => m[1].trim()).filter(Boolean);
+  if (msgs.length) t = msgs.join('\n');
+  t = t.replace(/<\/?(output|status|think|message|br\s*\/?)[^>]*>/g, m => (/^<br/i.test(m) ? '\n' : ''));
+  return t.trim();
+}
+const fmt = (n) => (n>=1e6? (n/1e6).toFixed(2)+'M' : n>=1e3? (n/1e3).toFixed(1)+'k' : String(n??0));
+const pct = (x) => ((x||0)*100).toFixed(1)+'%';
+const rate = (x) => (x>=0.6?'good':x>=0.25?'mid':'low');
+
+async function api(path, opts){
+  const r = await fetch(API+path, Object.assign({headers:{'Content-Type':'application/json'}}, opts));
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
+}
+
+/* ---------------- 控制中心：用量 / 记忆 / 插件 ---------------- */
+const SUB = { usage: '用量', memory: '记忆', plugins: '插件' };
+async function renderControl(sub){
+  sub = sub || 'usage';
+  const p = $('#panel');
+  p.innerHTML = `<div class="card" style="padding:8px">
+      <div id="subtabs" style="display:flex;gap:6px">
+        ${Object.entries(SUB).map(([k,v])=>`<button class="btn ${k===sub?'':'ghost'} sm" data-sub="${k}" style="flex:1">${v}</button>`).join('')}
+      </div>
+    </div><div id="subbody"></div>`;
+  p.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => renderControl(b.dataset.sub));
+  if(sub==='usage') return renderUsage();
+  if(sub==='memory') return renderMemory();
+  return renderPlugins();
+}
+async function renderUsage(){
+  const box = $('#subbody');
+  box.innerHTML = '<div class="card"><div class="h">用量</div><select id="range">'
+    + ['1','24','168','720','2160'].map((h,i)=>`<option value="${h}"${h==='168'?' selected':''}>${['最近 1 小时','最近 24 小时','最近 7 天','最近 30 天','最近 90 天'][i]}</option>`).join('')
+    + '</select></div><div id="tok"></div>';
+  $('#range').onchange = loadTokens;
+  await loadTokens();
+}
+/* 记忆 */
+async function renderMemory(){
+  const box = $('#subbody');
+  box.innerHTML = `<div class="card">
+      <div class="h">记忆</div>
+      <div class="row" style="gap:6px"><input type="text" id="mq" placeholder="搜索记忆内容 / 关键词" /><button class="btn sm" id="mgo" style="flex:0 0 auto">搜索</button></div>
+      <div class="muted" id="mstat" style="margin-top:8px;font-size:11.5px">加载中…</div>
+    </div><div id="mlist"></div>`;
+  const run = async () => {
+    const q = $('#mq').value.trim();
+    $('#mlist').innerHTML = '<div class="card muted">加载中…</div>';
+    let d; try { d = await api('/api/autonomy/memory?limit=40' + (q?('&q='+encodeURIComponent(q)):'')); } catch(e){ $('#mlist').innerHTML='<div class="card low">'+esc(e.message)+'</div>'; return }
+    if(!d.ok){ $('#mlist').innerHTML = '<div class="card low">'+esc(d.error||'读取失败')+'</div>'; return }
+    $('#mstat').textContent = `共 ${d.total} 条${q?`（匹配「${q}」）`:''}，显示最近 ${d.items.length} 条`;
+    $('#mlist').innerHTML = d.items.map(m=>`<div class="card" style="margin-bottom:8px">
+        <div class="muted" style="font-size:11px;display:flex;justify-content:space-between"><span>${m.preset||''}</span><span>${m.createdAt? new Date(Number(m.createdAt)).toLocaleString():''}</span></div>
+        <div style="margin-top:6px;white-space:pre-wrap">${esc(m.content)}</div>
+        ${m.keywords?`<div class="muted" style="font-size:11px;margin-top:6px">关键词：${esc(m.keywords)}</div>`:''}
+      </div>`).join('') || '<div class="card muted">没有匹配的记忆</div>';
+  };
+  $('#mgo').onclick = run;
+  $('#mq').addEventListener('keydown', e=>{ if(e.key==='Enter') run() });
+  await run();
+}
+/* 插件 */
+async function renderPlugins(){
+  const box = $('#subbody');
+  box.innerHTML = '<div class="card muted">加载中…</div>';
+  let d; try { d = await api('/api/autonomy/overview'); } catch(e){ box.innerHTML='<div class="card low">'+esc(e.message)+'</div>'; return }
+  if(!d.ok){ box.innerHTML = '<div class="card low">'+esc(d.error||'读取失败')+'</div>'; return }
+  const c = d.counts || {};
+  box.innerHTML = `
+    <div class="card">
+      <div class="h">插件总览</div>
+      <div class="grid2">
+        <div class="stat"><div class="v">${c.enabled||0}/${c.koishi||0}</div><div class="k">Koishi 插件（启用/总数）</div></div>
+        <div class="stat"><div class="v">${c.py||0}</div><div class="k">Python 插件（多框架兼容）</div></div>
+      </div>
+      <div class="muted" style="margin-top:8px;font-size:11.5px">
+        版本 ${esc(d.version||'')} · Python：${d.python? esc(d.python):'未找到（AstrBot 插件无法运行）'} · 工作区 ${esc(d.root||'')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="h">安装 Koishi 插件</div>
+      <div class="row" style="gap:6px"><input type="text" id="pi" placeholder="包名，如 koishi-plugin-puppeteer" /><button class="btn sm" id="pgo" style="flex:0 0 auto">安装</button></div>
+      <div class="muted" style="margin-top:6px;font-size:11.5px">从 npm 镜像下载解包到程序目录并自动启用（装完需重启 Alison）。</div>
+    </div>
+    <div class="card">
+      <div class="h">插件平台兼容性</div>
+      <table>
+        <tr><th>平台</th><th>语言</th><th>兼容程度</th></tr>
+        <tr><td><b>Koishi</b> / ChatLuna</td><td>JS</td><td><span class="tag">原生</span> 直接安装运行</td></tr>
+        <tr><td><b>MCP</b>（Model Context Protocol）</td><td>任意</td><td><span class="tag">原生</span> 装 chatluna-mcp-client 后填 mcpServers</td></tr>
+        <tr><td><b>AstrBot</b></td><td>Python</td><td><span class="tag">命令子集</span> filter.command / keyword / regex</td></tr>
+        <tr><td><b>NoneBot2</b></td><td>Python</td><td><span class="tag">命令子集</span> on_command / on_keyword / on_startswith / on_message</td></tr>
+        <tr><td><b>MaiBot</b>（maibot_sdk）</td><td>Python</td><td><span class="tag">命令子集</span> @Command / @Action / @Tool</td></tr>
+        <tr><td><b>LangBot</b> 4.x</td><td>Python</td><td><span class="tag low">尽力而为</span> 组件式，完整语义需官方 Plugin Runtime</td></tr>
+        <tr><td>mirai-console</td><td>Java/Kotlin</td><td><span class="tag low">未支持</span> 需要 JVM 旁路（规划中）</td></tr>
+      </table>
+      <div class="muted" style="margin-top:8px;font-size:11.5px">
+        兼容层只精确实现「注册命令」这一层 API，其余 API 用宽容桩兜底，插件能加载到注册阶段；
+        「命令 → 文本回复」可用，依赖完整运行时（会话上下文 / LLM / 平台适配器）的插件不行。需要本机 Python 3.9+。
+      </div>
+    </div>
+    <div class="card">
+      <div class="h">安装 Python 插件</div>
+      <div class="row" style="gap:6px">
+        <select id="afw" style="flex:0 0 120px">
+          ${Object.entries(d.pyFrameworks||{}).map(([k,v])=>`<option value="${esc(k)}">${esc(v.title)}</option>`).join('')}
+        </select>
+        <input type="text" id="ai" placeholder="GitHub 地址 / zip 地址 / 本地目录" />
+        <button class="btn sm" id="ago" style="flex:0 0 auto">安装</button>
+      </div>
+      <div class="muted" style="margin-top:6px;font-size:11.5px">装到 workspace/plugins/py/&lt;框架&gt;/&lt;插件名&gt;/，装完用「查看命令」看它注册了什么。</div>
+    </div>
+    <div class="card">
+      <div class="h">已装插件 <span class="muted" style="font-weight:400">（点开关切换启用状态）</span></div>
+      <table><tr><th>插件</th><th class="num">状态</th></tr>
+      ${(d.items||[]).map(p=>`<tr><td title="${esc(p.name)}">${esc(p.name)}${p.local?' <span class="tag">本地</span>':''}${p.onDisk?'':' <span class="tag low">缺文件</span>'}</td>
+        <td class="num"><button class="btn ${p.enabled?'':'ghost'} sm" data-tog="${esc(p.name)}" data-en="${p.enabled?1:0}">${p.enabled?'已启用':'已禁用'}</button></td></tr>`).join('')}
+      </table>
+    </div>
+    ${(d.py||[]).length?`<div class="card"><div class="h">Python 插件（多框架）</div>
+      <table><tr><th>插件</th><th>框架</th><th class="num">操作</th></tr>
+      ${d.py.map(a=>`<tr><td>${esc(a.name)}<div class="muted" style="font-size:11px">${esc(a.desc||'')}</div></td><td><span class="tag">${esc(a.frameworkTitle||a.framework)}</span></td>
+        <td class="num"><button class="btn ghost sm" data-arb="${esc(a.dir)}" data-fw="${esc(a.framework)}">查看命令</button></td></tr>`).join('')}</table></div>`:''}
+    <div id="pout"></div>`;
+  $('#pgo').onclick = async () => {
+    const name = $('#pi').value.trim(); if(!name) return;
+    $('#pout').innerHTML = '<div class="card muted">安装中（可能需要十几秒）…</div>';
+    const r = await api('/api/autonomy/plugins/install', {method:'POST', body: JSON.stringify({name})});
+    $('#pout').innerHTML = '<div class="card '+(r.ok?'':'low')+'">'+esc(r.ok? `已安装 ${r.package}@${r.version||''}，已写入配置${r.needRestart?'，重启 Alison 后生效':''}` : (r.error||'失败'))+'</div>';
+  };
+  $('#ago').onclick = async () => {
+    const source = $('#ai').value.trim(); if(!source) return;
+    const framework = $('#afw') ? $('#afw').value : 'astrbot';
+    $('#pout').innerHTML = '<div class="card muted">安装中…</div>';
+    const r = await api('/api/autonomy/py/install', {method:'POST', body: JSON.stringify({framework, source})});
+    $('#pout').innerHTML = '<div class="card '+(r.ok?'':'low')+'">'+esc(r.ok? `已安装 ${r.framework} 插件 ${r.name}` : (r.error||'失败'))+'</div>';
+    if(r.ok) renderPlugins();
+  };
+  box.querySelectorAll('[data-tog]').forEach(b => b.onclick = async () => {
+    const r = await api('/api/autonomy/plugins/toggle', {method:'POST', body: JSON.stringify({name: b.dataset.tog, enabled: b.dataset.en !== '1'})});
+    toast(r.ok? '已修改，重启 Alison 后生效' : (r.error||'失败'));
+    renderPlugins();
+  });
+  box.querySelectorAll('[data-arb]').forEach(b => b.onclick = async () => {
+    $('#pout').innerHTML = '<div class="card muted">加载插件…</div>';
+    const r = await api('/api/autonomy/py/inspect', {method:'POST', body: JSON.stringify({framework: b.dataset.fw || 'astrbot', name: b.dataset.arb})});
+    $('#pout').innerHTML = '<div class="card '+(r.ok?'':'low')+'">'+esc(r.ok
+      ? ('框架：' + (r.framework||'') + '　入口：' + ((r.entries||[]).join(', ')||'-') + '\n命令：' + ((r.commands||[]).join(', ')||'无')
+         + ((r.unsupported&&r.unsupported.length)? ('\n插件用到但兼容层未精确实现的 API：' + r.unsupported.slice(0,8).join(', ')) : '')
+         + ((r.errors&&r.errors.length)? ('\n错误：' + r.errors.join('\n')) : ''))
+      : (r.error||'失败'))+'</div>';
+  });
+}
+async function loadTokens(){
+  const hours = $('#range') ? $('#range').value : '168';
+  const box = $('#tok'); if(!box) return;
+  box.innerHTML = '<div class="card muted">加载中…</div>';
+  let d;
+  try { d = await api('/api/usage?hours='+hours); } catch(e){ box.innerHTML = '<div class="card low">读取失败：'+esc(e.message)+'</div>'; return; }
+  if(!d.ok){ box.innerHTML = '<div class="card low">'+esc(d.error)+'</div>'; return; }
+  const t = d.totals;
+  const maxT = Math.max(1, ...d.series.map(s=>s.total));
+  box.innerHTML = `
+    <div class="card">
+      <div class="h">总览（${d.range.hours} 小时）</div>
+      <div class="grid2">
+        <div class="stat"><div class="v">${fmt(t.calls)}</div><div class="k">调用次数（失败 ${t.failed}）</div></div>
+        <div class="stat"><div class="v">${fmt(t.total)}</div><div class="k">总 Token</div></div>
+        <div class="stat"><div class="v ${rate(t.hitRate)}">${pct(t.hitRate)}</div><div class="k">缓存命中率</div></div>
+        <div class="stat"><div class="v">${t.points.toFixed(2)}<span style="font-size:11px;color:var(--dim)"> 点</span></div><div class="k">花费（估）${t.usd? ' · $'+t.usd.toFixed(4):''}</div></div>
+      </div>
+      <div class="muted" style="margin-top:8px;font-size:11.5px">输入 ${fmt(t.input)} / 命中 ${fmt(t.cacheRead)} / 输出 ${fmt(t.output)}${t.unknownPrice?`　<span class="tag">${t.unknownPrice} 次无价目表</span>`:''}</div>
+    </div>
+    <div class="card">
+      <div class="h">按模型</div>
+      ${d.byModel.length? `<table><tr><th>模型</th><th class="num">调用</th><th class="num">命中率</th><th class="num">花费</th></tr>
+        ${d.byModel.map(m=>`<tr><td title="${esc(m.key)}">${esc(m.key.length>18?m.key.slice(0,18)+'…':m.key)}</td><td class="num">${m.calls}</td><td class="num ${rate(m.hitRate)}">${pct(m.hitRate)}</td><td class="num">${m.price? (m.usd? '$'+m.usd.toFixed(4) : m.points.toFixed(2)) : '—'}</td></tr>`).join('')}
+      </table>` : '<div class="muted">还没有记录</div>'}
+    </div>
+    <div class="card">
+      <div class="h">用量趋势（每小时）</div>
+      ${d.series.length? `<div class="bars">${d.series.slice(-60).map(s=>`<i style="height:${Math.max(3,100*s.total/maxT)}%" title="${new Date(s.t).toLocaleString()} · ${fmt(s.total)} token"></i>`).join('')}</div>` : '<div class="muted">暂无数据</div>'}
+    </div>
+    <div class="card">
+      <div class="h">最近调用</div>
+      ${d.recent.length? `<table><tr><th>时间</th><th>模型</th><th class="num">命中</th><th class="num">ttft</th></tr>
+        ${d.recent.slice(0,20).map(r=>`<tr><td>${new Date(r.t).toLocaleTimeString()}</td><td title="${esc(r.model)}">${esc(String(r.model).slice(-14))}</td><td class="num ${rate(r.input? r.cacheRead/r.input:0)}">${fmt(r.cacheRead)}</td><td class="num">${r.ttftMs? (r.ttftMs/1000).toFixed(1)+'s':'-'}</td></tr>`).join('')}
+      </table>` : '<div class="muted">暂无数据</div>'}
+    </div>`;
+}
+
+/* ---------------- 系统设置 ---------------- */
+/* 把后端注册的模型列成下拉：新手不用手打模型名（打错了就会"模型不可用"） */
+async function loadModelOptions(){
+  const sel = $('#s_model_sel');
+  if(!sel) return;
+  try{
+    const d = await api('/api/models');
+    const models = d.models || [];
+    if(!models.length){ sel.innerHTML = '<option value="">（没读到模型：检查一下适配器与 API Key）</option>'; return }
+    sel.innerHTML = `<option value="">— 选择模型（后端注册了 ${models.length} 个）—</option>` +
+      Object.entries(d.grouped||{}).map(([plat,list]) =>
+        `<optgroup label="${esc(plat)}">` + list.map(m=>`<option value="${esc(plat+'/'+m)}">${esc(m)}</option>`).join('') + '</optgroup>').join('');
+    sel.onchange = () => { if(sel.value) $('#s_model').value = sel.value; };
+  }catch(e){ sel.innerHTML = '<option value="">（读取失败：'+esc(e.message)+'）</option>' }
+}
+/* ---------------- 图形化填写 API Key ---------------- */
+async function akLoadProviders(){
+  const sel = $('#ak_provider');
+  if(!sel) return;
+  try{
+    const d = await api('/api/config/providers');
+    sel.innerHTML = (d.providers||[]).map(p=>`<option value="${esc(p.id)}">${esc(p.label)}</option>`).join('');
+    sel.onchange = () => {
+      const p = (d.providers||[]).find(x=>x.id===sel.value);
+      if(!p) return;
+      if(p.baseUrl) $('#ak_base').value = p.baseUrl;
+      if(p.model && !$('#ak_model').value) $('#ak_model').value = ($('#ak_base').value && p.id!=='keep' ? '' : '') || p.model;
+    };
+    const cur = (d.adapters||[]).find(a=>a.hasKey);
+    if(cur){ $('#ak_msg').textContent = '现有适配器：' + cur.key + (cur.enabled?'（已启用）':'（未启用）'); }
+  }catch(e){ sel.innerHTML = '<option value="keep">（读取失败）</option>'; }
+}
+async function akSave(withTest){
+  const msg = $('#ak_msg');
+  const key = $('#ak_key').value.trim();
+  if(!key){ msg.textContent = '先粘贴 API Key。'; return; }
+  msg.textContent = '正在写入…';
+  try{
+    const r = await api('/api/config/key', { provider: $('#ak_provider').value, key, baseUrl: $('#ak_base').value.trim(), model: $('#ak_model').value.trim() });
+    if(!r.ok){ msg.textContent = '❌ 写入失败：' + (r.error||'未知错误'); return; }
+    msg.textContent = '✓ 已写入 ' + (r.writes||[]).map(w=>w.plugin + (w.value?('.'+w.field+'='+w.value):'')).join('、') + '。' + (r.hint||'');
+    $('#ak_key').value = '';
+    if(withTest){
+      msg.textContent += '\n正在测试连接…';
+      const t = await api('/api/config/test', { model: $('#ak_model').value.trim() });
+      msg.textContent = (t.ok ? '✓ 连接正常（' + t.model + '）：' + (t.reply||'') : '✗ ' + (t.error||'测试失败'))
+        + '\n' + (r.hint||'');
+    }
+    await loadModelOptions();
+  }catch(e){ msg.textContent = '❌ ' + e.message; }
+}
+/* ---------------- 工具进度可视化（装插件/搜索/体检…看得懂） ---------------- */
+const TOOL_LABEL = {
+  alison_plugin: '📦 插件管理', alison_search: '🔍 找插件', alison_repo: '🔎 识别仓库',
+  alison_install_plugin: '📦 装插件', alison_selfedit: '🛠 改自己', alison_config: '⚙️ 改配置',
+  alison_repair: '🩺 自我体检', alison_persona: '🎭 调人设', alison_restart: '🔄 重启自己',
+  alison_reload: '♻️ 热重载', alison_self_status: '📊 看状态', alison_update: '⬆️ 检查更新'
+};
+let TOOL_STATS = {};
+function toolArgs(data){
+  try { return typeof data.args === 'string' ? JSON.parse(data.args || '{}') : (data.args || {}); } catch { return {}; }
+}
+function toolTitle(name, data){
+  const a = toolArgs(data), label = TOOL_LABEL[name] || ('🔧 ' + name);
+  if(name === 'alison_plugin' || name === 'alison_install_plugin'){
+    const what = a.name || a.package || a.plugin || '';
+    const act = a.action || (name === 'alison_install_plugin' ? 'install' : '');
+    return label + (act ? ' · ' + act : '') + (what ? ' ' + what : '') + ' …';
+  }
+  if(name === 'alison_search') return label + (a.query ? ' "' + a.query + '" …' : ' …');
+  if(name === 'alison_repo') return label + (a.repo ? ' ' + a.repo + ' …' : ' …');
+  if(name === 'alison_selfedit') return label + (a.action ? ' · ' + a.action : '') + ' …';
+  if(name === 'alison_config') return label + (a.action ? ' · ' + a.action : '') + ' …';
+  return label + ' …';
+}
+function toolSummary(name, preview){
+  let o = null;
+  try { o = JSON.parse(preview); } catch { o = null; }
+  if(name === 'alison_plugin' || name === 'alison_install_plugin'){
+    if(o && o.ok){ TOOL_STATS.installs = (TOOL_STATS.installs||0)+1; return '✓ 已装 ' + (o.package || '') + (o.version ? ' v' + o.version : '') + '（本次第 ' + TOOL_STATS.installs + ' 个）'; }
+    if(o && o.package && o.installed) return '✓ 已在 ' + (o.package) + '（无需重装）';
+    if(o && o.error) return '✗ ' + o.error;
+    return '✓ 完成';
+  }
+  if(name === 'alison_search'){
+    if(Array.isArray(o)) return '找到 ' + o.length + ' 个候选';
+    const m = String(preview).match(/\[\s*\{/); return m ? '找到若干候选' : '（无结果）';
+  }
+  if(name === 'alison_repo') return (o && o.kind) ? ('识别为 ' + o.kind + (o.npmName ? '：' + o.npmName : '')) : '完成';
+  if(name === 'alison_repair') return (o && o.ok) ? '体检通过' : '体检发现问题（详见回复）';
+  if(name === 'alison_restart' || name === 'alison_reload') return '已受理';
+  return '';
+}
+function toolChip(holder, text, kind){
+  const box = holder.querySelector('div:last-child') || holder;
+  const cls = kind === 'done' ? 'meta' : 'meta';
+  const color = kind === 'done' ? '#86efac' : '#c4b5fd';
+  box.insertAdjacentHTML('beforeend', `<div class="${cls}" style="color:${color}">${esc(text)}</div>`);
+  $('#msgs').scrollTop = $('#msgs').scrollHeight;
+}
+async function restartMe(){
+  if(!confirm('要重启 Alison 吗？大约 5 秒后自动回来，工作区和配置都不会丢。')) return;
+  try{
+    const r = await api('/api/restart', {});
+    if(r && r.ok === false){ alert('重启失败：' + (r.error || '未知错误')); return; }
+    const box = document.createElement('div');
+    box.innerHTML = '<span class="low">🔄 正在重启…约 5 秒后自动刷新页面</span>';
+    $('#msgs').appendChild(box);
+    let n = 6;
+    const t = setInterval(() => {
+      n--;
+      box.firstChild.textContent = '🔄 正在重启…' + n + ' 秒后自动刷新';
+      if(n <= 0){ clearInterval(t); location.reload(); }
+    }, 1000);
+  }catch(e){ alert('重启失败：' + e.message); }
+}
+async function renderSettings(){
+  const p = $('#panel');
+  const s = BOOT.settings, sys = BOOT.system || {};
+  p.innerHTML = `
+    <div class="card">
+      <div class="h">模型与 API Key</div>
+      <div class="row">
+        <div><label class="f">服务商</label><select id="ak_provider"></select></div>
+        <div><label class="f">模型</label><input type="text" id="ak_model" value="${esc(s.model)}" /></div>
+      </div>
+      <label class="f">API Key（只写进你本机配置，不会外传）</label>
+      <input type="password" id="ak_key" placeholder="sk-..." autocomplete="off" />
+      <label class="f">接口地址（OpenAI 兼容，留空用默认）</label>
+      <input type="text" id="ak_base" placeholder="https://api.deepseek.com" />
+      <div class="row" style="margin-top:6px">
+        <div><button class="btn sm" id="ak_save">保存</button></div>
+        <div><button class="btn sm" id="ak_test">保存并测试连接</button></div>
+        <div><button class="btn ghost sm" id="ak_fill">用现有配置填充</button></div>
+      </div>
+      <div id="ak_msg" class="low" style="margin-top:6px"></div>
+      <div class="low" style="margin-top:4px">提示：写好后如果「可用模型」还是空的，重启一次 Alison 就会加载（适配器只在启动时建客户端）。</div>
+    </div>
+    <div class="card">
+      <div class="h">网页聊天</div>
+      <label class="f">模型（从下面选，或直接手打）</label>
+      <select id="s_model_sel" style="margin-bottom:6px"><option value="">（读取可用模型…）</option></select>
+      <input type="text" id="s_model" value="${esc(s.model)}" />
+      <div class="row">
+        <div><label class="f">temperature</label><input type="number" step="0.1" id="s_temp" value="${s.temperature}" /></div>
+        <div><label class="f">maxTokens</label><input type="number" id="s_max" value="${s.maxTokens}" /></div>
+      </div>
+      <label class="f">携带历史轮数</label>
+      <input type="number" id="s_hist" value="${s.historyLimit}" />
+      <label class="f">系统 prompt（默认来自 ${esc(BOOT.personaFrom)}）</label>
+      <textarea id="s_prompt">${esc(s.systemPrompt || '')}</textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="saveSet">保存</button>
+        <button class="btn ghost sm" id="resetPrompt">恢复默认人设</button>
+      </div>
+      <div class="muted" style="margin-top:8px;font-size:11.5px">保存到 data/alison-platform-web/settings.json，立即生效（只影响网页聊天）。</div>
+    </div>
+    <div class="card">
+      <div class="h">身份列表</div>
+      <div id="idents"></div>
+      <button class="btn ghost sm" id="addIdent" style="margin-top:6px">＋ 新增身份</button>
+    </div>
+    <div class="card">
+      <div class="h">Alison 记得的人 <span class="muted" style="font-weight:400">（来自好感度与记忆，可直接在上方身份里选；点「存为我的身份」会加进你的身份列表）</span></div>
+      <div id="knownPeople"></div>
+    </div>
+    <div class="card">
+      <div class="h">QQ 侧配置（只读，改 koishi.yml 后重启）</div>
+      <table>
+        <tr><td class="muted">群聊模型</td><td>${esc(sys.characterGroupModel||'-')}</td></tr>
+        <tr><td class="muted">私聊模型</td><td>${esc(sys.characterPrivateModel||'-')}</td></tr>
+        <tr><td class="muted">角色预设</td><td>${esc(sys.characterGroupPreset||'-')}</td></tr>
+        <tr><td class="muted">默认预设</td><td>${esc(sys.defaultPreset||'-')}</td></tr>
+        <tr><td class="muted">机器人 QQ</td><td>${esc(sys.onebotSelfId||'-')}</td></tr>
+        <tr><td class="muted">已启用插件</td><td>${sys.pluginsEnabled ?? (sys.plugins||[]).length} 个</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="h">价目表（墨点 / 百万 token）</div>
+      <table><tr><th>模型</th><th class="num">命中</th><th class="num">未命中</th><th class="num">输出</th></tr>
+      ${Object.entries(BOOT.prices).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.hit}</td><td class="num">${v.miss}</td><td class="num">${v.out}</td></tr>`).join('')}
+      </table>
+    </div>`;
+  renderIdents();
+  loadModelOptions();
+  akLoadProviders();
+  if($('#ak_save')) $('#ak_save').onclick = () => akSave(false);
+  if($('#ak_test')) $('#ak_test').onclick = () => akSave(true);
+  if($('#ak_fill')) $('#ak_fill').onclick = async () => {
+    try{
+      const d = await api('/api/config/providers');
+      const cur = (d.adapters||[]).find(a=>a.hasKey);
+      if(cur){ $('#ak_msg').textContent = '现有适配器：' + cur.key; }
+      const m = await api('/api/models');
+      if(m && m.count){ $('#ak_msg').textContent += '；后端已有 ' + m.count + ' 个可用模型。'; }
+    }catch(e){}
+  };
+  $('#addIdent').onclick = () => { BOOT.settings.identities.push({id:'id-'+Date.now(),name:'新身份',note:''}); renderIdents(); refreshIdentitySelect(); };
+  $('#saveSet').onclick = saveSettings;
+  $('#resetPrompt').onclick = () => { $('#s_prompt').value = ''; };
+}
+function renderIdents(){
+  const box = $('#idents'); if(!box) return;
+  box.innerHTML = BOOT.settings.identities.map((it,i)=>`
+    <div class="ident">
+      <input type="text" value="${esc(it.name)}" data-i="${i}" data-k="name" placeholder="名字" />
+      <input type="text" value="${esc(it.note||'')}" data-i="${i}" data-k="note" placeholder="备注（如：好感度很高）" />
+      <button class="btn ghost sm" data-del="${i}">×</button>
+    </div>`).join('');
+  box.querySelectorAll('input').forEach(inp => inp.oninput = (e) => {
+    BOOT.settings.identities[+e.target.dataset.i][e.target.dataset.k] = e.target.value;
+  });
+  box.querySelectorAll('[data-del]').forEach(b => b.onclick = (e) => {
+    BOOT.settings.identities.splice(+e.target.dataset.del,1); renderIdents(); refreshIdentitySelect();
+  });
+  // Alison 记得的人（好感度 + 记忆档案里认出来的）
+  const kp = $('#knownPeople');
+  if(kp){
+    const known = BOOT.settings.detected || [];
+    if(!known.length){
+      kp.innerHTML = '<div class="muted" style="font-size:11.5px">还没有——等 Alison 在 QQ 里跟人聊过、或生成了记忆档案就会出现在这里。</div>';
+    } else {
+      kp.innerHTML = '<table><tr><th>名字</th><th>备注</th><th class="num">操作</th></tr>' + known.map(p=>`
+        <tr>
+          <td>${esc(p.name)}<div class="muted" style="font-size:10.5px">${esc(p.id)}</div></td>
+          <td class="muted" style="font-size:11px">${esc(String(p.note||'').slice(0,90))}</td>
+          <td class="num"><button class="btn ghost sm" data-pick="${esc(p.id)}" data-name="${esc(p.name)}" data-note="${esc(String(p.note||'').slice(0,60))}">存为我的身份</button></td>
+        </tr>`).join('') + '</table>';
+      kp.querySelectorAll('[data-pick]').forEach(b => b.onclick = async () => {
+        const id = b.dataset.pick;
+        if((BOOT.settings.identities||[]).some(x=>x.id===id)){ toast('已经在你的身份列表里了'); return }
+        BOOT.settings.identities.push({ id, name: b.dataset.name, note: b.dataset.note });
+        await saveSettings();
+        renderIdents(); refreshIdentitySelect();
+        toast('已加进你的身份列表');
+      });
+    }
+  }
+}
+async function saveSettings(){
+  const body = {
+    model: $('#s_model').value.trim(),
+    temperature: Number($('#s_temp').value),
+    maxTokens: Number($('#s_max').value),
+    historyLimit: Number($('#s_hist').value),
+    systemPrompt: $('#s_prompt').value,
+    identities: BOOT.settings.identities.filter(x=>x.name && x.name.trim())
+  };
+  const r = await api('/api/settings', {method:'POST', body: JSON.stringify(body)});
+  BOOT.settings = Object.assign(BOOT.settings, r.settings);
+  refreshIdentitySelect();
+  toast('已保存');
+}
+function toast(msg){
+  const h = $('#hint'); h.textContent = msg; setTimeout(()=>{ if(h.textContent===msg) h.textContent=''; }, 2500);
+}
+
+/* ---------------- 聊天 ---------------- */
+function refreshIdentitySelect(){
+  const sel = $('#identity');
+  const mine = BOOT.settings.identities || [];
+  const known = BOOT.settings.detected || [];
+  let html = `<optgroup label="我的身份">` + mine.map(i=>`<option value="${esc(i.id)}">${esc(i.name)}${i.note?' · '+esc(i.note):''}</option>`).join('') + `</optgroup>`;
+  if(known.length){
+    html += `<optgroup label="Alison 记得的人（${known.length}）">` + known.map(i=>`<option value="${esc(i.id)}">${esc(i.name)}${i.note?' · '+esc(String(i.note).slice(0,46)):''}</option>`).join('') + `</optgroup>`;
+  }
+  sel.innerHTML = html;
+  const all = mine.concat(known);
+  if(IDENTITY && all.some(i=>i.id===IDENTITY)) sel.value = IDENTITY; else IDENTITY = sel.value;
+}
+function bubble(role, text, meta){
+  const el = document.createElement('div');
+  el.className = 'msg ' + (role==='user'?'me':'ice');
+  el.innerHTML = `<div class="av">${role==='user'?'我':'Alison'}</div><div><div class="bub">${esc(clean(text))}</div>${meta?`<div class="meta">${esc(meta)}</div>`:''}</div>`;
+  $('#msgs').appendChild(el);
+  $('#msgs').scrollTop = $('#msgs').scrollHeight;
+  return el;
+}
+async function loadHistory(){
+  const id = `web:${IDENTITY}`;
+  const d = await api('/api/history?conversationId='+encodeURIComponent(id));
+  const box = $('#msgs'); box.innerHTML = '';
+  if(!d.messages.length){ box.innerHTML = '<div class="empty">选好你的身份，跟 Alison 说句话吧</div>'; return; }
+  d.messages.forEach(m => bubble(m.role==='user'?'user':'assistant', m.content));
+}
+async function send(){
+  if(BUSY) return;
+  const text = $('#input').value.trim(); if(!text) return;
+  if($('#msgs .empty')) $('#msgs').innerHTML = '';
+  $('#input').value=''; bubble('user', text);
+  BUSY = true; $('#send').disabled = true; $('#stop').style.display='';
+  const holder = bubble('assistant', '');
+  holder.querySelector('.bub').innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+  let full = '', usage = null;
+  ABORT = new AbortController();
+  try{
+    const r = await fetch(API+'/api/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'}, signal: ABORT.signal,
+      body: JSON.stringify({message:text, identityId:IDENTITY, conversationId:`web:${IDENTITY}`})
+    });
+    const reader = r.body.getReader(); const dec = new TextDecoder(); let buf='';
+    while(true){
+      const {done, value} = await reader.read(); if(done) break;
+      buf += dec.decode(value, {stream:true});
+      const parts = buf.split('\n\n'); buf = parts.pop();
+      for(const part of parts){
+        const ev = (part.match(/^event: (.*)$/m)||[])[1];
+        const dataLine = (part.match(/^data: (.*)$/m)||[])[1];
+        if(!ev || !dataLine) continue;
+        let data; try{ data = JSON.parse(dataLine); }catch{ continue; }
+        if(ev==='delta'){ full += data.text; holder.querySelector('.bub').textContent = clean(full); $('#msgs').scrollTop = $('#msgs').scrollHeight; }
+        else if(ev==='done'){ usage = data.usage; holder.querySelector('.bub').textContent = clean(full); }
+        else if(ev==='error'){ holder.querySelector('.bub').innerHTML = '<span class="low">'+esc(data.message)+'</span>'; }
+        else if(ev==='reset'){ full=''; holder.querySelector('.bub').textContent=''; }
+        else if(ev==='tool'){ TOOL_STATS = {}; toolChip(holder, toolTitle(data.name, data), 'run'); }
+        else if(ev==='toolResult'){
+          const s = toolSummary(data.name, String(data.preview||''));
+          toolChip(holder, s ? ('↳ ' + s) : ('↳ ' + String(data.preview||'').replace(/\s+/g,' ').slice(0,140)), 'done');
+        }
+        else if(ev==='tools'){ TOOLS = data; }
+      }
+    }
+  }catch(e){
+    if(e.name!=='AbortError') holder.querySelector('.bub').innerHTML = '<span class="low">'+esc(e.message)+'</span>';
+  }finally{
+    BUSY = false; ABORT = null; $('#send').disabled = false; $('#stop').style.display='none';
+    if(usage){
+      const det = usage.input_token_details||{};
+      const hit = det.cache_read ?? det.cached_tokens ?? 0;
+      holder.querySelector('.meta') || holder.querySelector('div:last-child').insertAdjacentHTML('beforeend',
+        `<div class="meta">${usage.input_tokens||0} in (命中 ${hit}) · ${usage.output_tokens||0} out</div>`);
+    }
+    refreshOnboarding();
+  }
+}
+
+/* ---------------- 初始化 ---------------- */
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on', x===b));
+  TAB = b.dataset.tab;
+  if(location.hash !== '#'+TAB) history.replaceState(null,'','#'+TAB);
+  TAB==='control' ? renderControl() : renderSettings();
+});
+$('#send').onclick = send;
+$('#stop').onclick = () => ABORT && ABORT.abort();
+$('#input').addEventListener('keydown', (e) => {
+  if(e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); send(); }
+});
+$('#addIdentity').onclick = () => {
+  const name = prompt('新身份的名字（比如：群友小张）'); if(!name) return;
+  const note = prompt('备注（可留空，比如：刚认识、有点讨厌）') || '';
+  BOOT.settings.identities.push({id:'id-'+Date.now(), name, note});
+  api('/api/settings',{method:'POST',body:JSON.stringify({identities:BOOT.settings.identities})}).then(r=>{ BOOT.settings=r.settings; refreshIdentitySelect(); toast('身份已新增'); });
+};
+$('#clearChat').onclick = async () => {
+  await api('/api/history/clear',{method:'POST',body:JSON.stringify({conversationId:`web:${IDENTITY}`})});
+  loadHistory();
+};
+$('#identity').onchange = (e) => { IDENTITY = e.target.value; loadHistory(); };
+
+/* ---------------- 首次部署引导：进度条 + 开场白 ---------------- */
+let ONB = null;
+function renderOnboardingBanner(){
+  const box = $('#obBanner');
+  if(!box) return;
+  if(!ONB || !ONB.firstRun){ box.style.display='none'; box.innerHTML=''; return; }
+  const dots = (ONB.steps||[]).map(s=>`<span title="${esc(s.title)}" style="display:inline-block;width:22px;height:4px;border-radius:2px;margin-right:4px;background:${s.done?'var(--accent)':'#2b3040'}"></span>`).join('');
+  box.style.display='block';
+  box.innerHTML = `<div class="card" style="margin:0 26px 0;padding:10px 12px;border-color:rgba(167,139,250,.35)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div style="font-size:12px"><b>正在一起把 Alison 搭起来</b>
+          <span class="muted">· 第 ${ONB.index}/${ONB.total} 步：${esc((ONB.steps[ONB.index-1]||{}).title||'')}</span></div>
+        <button class="btn ghost sm" id="obReset" style="flex:0 0 auto">重新来一遍</button>
+      </div>
+      <div style="margin-top:8px">${dots}</div>
+    </div>`;
+  const rb = $('#obReset');
+  if(rb) rb.onclick = async () => { await api('/api/onboarding/reset', {method:'POST', body:'{}'}); location.reload(); };
+}
+async function refreshOnboarding(){
+  try { ONB = await api('/api/onboarding/state'); } catch { ONB = null; }
+  renderOnboardingBanner();
+}
+async function startOnboardingIfNeeded(){
+  if(!BOOT.onboarding) return;
+  ONB = BOOT.onboarding;
+  renderOnboardingBanner();
+  if(ONB.firstRun && ONB.opening && !$('#msgs').querySelector('.msg')){
+    bubble('ice', ONB.opening);
+    $('#msgs').querySelector('.empty') && ($('#msgs').innerHTML='');
+  }
+}
+
+(async function init(){
+  BOOT = await api('/api/bootstrap');
+  document.title = BOOT.title || 'Alison';
+  $('#brandTitle').textContent = BOOT.title || 'Alison';
+  refreshIdentitySelect();
+  await loadHistory();
+  await startOnboardingIfNeeded();
+  // 支持 #control / #settings 深链
+  const want = (location.hash || '').replace('#','');
+  if(want === 'settings'){ const b=document.querySelector('[data-tab="settings"]'); if(b) b.click(); }
+  else await renderControl();
+})();
+</script>
+</body>
+</html>

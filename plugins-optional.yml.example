@@ -1,0 +1,32 @@
+# 可选插件清单（默认不装不启；Alison 可以自己装，也可以在这里取消注释后手动启用）
+
+  # rate-limit  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # rate-limit:xhl6pk: {}
+  # console  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # console:l3na2m: {}
+  # chatluna-livingdiary  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-livingdiary:oqadfl: {}
+  # chatluna-openai-like-adapter  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-openai-like-adapter:och56w: {}
+  # chatluna-openai-like-adapter  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-openai-like-adapter:intern1: {}
+  # chatluna-intern-ai-adapter  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-intern-ai-adapter:b20duv: {}
+  # chatluna-multimodal-service  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-multimodal-service:2vo2sp: {}
+  # chatluna-onebot-agent  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-onebot-agent:p8svr7: {}
+  # chatluna-think-viewer  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-think-viewer:f8vftn: {}
+  # chatluna-forward-msg  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-forward-msg:w9pyjd: {}
+  # chatluna-proactive-trigger  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-proactive-trigger:17ms9u: {}
+  # chatluna-affinity  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # chatluna-affinity:9ud4sx: {}
+  # memesluna  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # memesluna:ge6mtg: {}
+  # alison-outreach  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # alison-outreach:iceout1: {}
+  # cache-database  （可选插件，可用「控制中心 → 插件」或让 Alison 自己安装后启用）
+  # cache-database:lv8tn9: {}

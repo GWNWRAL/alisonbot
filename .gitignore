@@ -1,0 +1,27 @@
+# 依赖与运行产物（不要提交）
+node_modules/
+package-lock.json
+.yarn/install-state.gz
+.yarn/cache/
+
+# 你的配置与数据（含 API Key、聊天记录、记忆）
+koishi.yml
+koishi.test.yml
+koishi.yml.new
+workspace/
+data/
+*.log
+logs/
+
+# 本地环境
+.env
+.env.local
+.DS_Store
+Thumbs.db
+*.bak
+*.bak-*
+*.tmp
+
+# Alison 运行配置（含 API Key 占位/个人设置）——只发布 .example 模板
+alison.yml
+alison.test.yml

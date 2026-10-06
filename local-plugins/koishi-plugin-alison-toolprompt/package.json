@@ -1,0 +1,31 @@
+{
+  "name": "koishi-plugin-alison-toolprompt",
+  "version": "0.1.0",
+  "description": "Alison 插件工具说明：每个插件一份独立提示词（与系统提示词分开存、正常注入），装插件自动生成、卸载自动删除",
+  "main": "lib/index.cjs",
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "koishi",
+    "koishi-plugin",
+    "alison",
+    "prompt"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "koishi": "^4.18.0"
+  },
+  "koishi": {
+    "category": "ai",
+    "description": {
+      "zh": "Alison 插件工具说明（自动生成/注入/删除）",
+      "en": "Per-plugin tool prompts"
+    },
+    "service": {
+      "required": [
+        "server"
+      ]
+    }
+  }
+}

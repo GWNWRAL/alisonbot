@@ -1,0 +1,27 @@
+{
+  "name": "koishi-plugin-alison-autonomy",
+  "version": "0.0.1",
+  "description": "Alison 自治能力：自己改配置、自己装插件（兼容 Koishi 与 AstrBot）、自检与自修复",
+  "main": "lib/index.cjs",
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "koishi",
+    "koishi-plugin",
+    "chatluna",
+    "ice",
+    "autonomy"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "koishi": "^4.18.0"
+  },
+  "koishi": {
+    "category": "ai",
+    "description": {
+      "zh": "Alison 自治能力（配置自改 / 插件自装 / 自修复）",
+      "en": "Alison autonomy (self-config, self-plugin, self-repair)"
+    }
+  }
+}
