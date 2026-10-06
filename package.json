@@ -1,7 +1,7 @@
 {
   "name": "alisonbot",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "AlisonBot：微内核 + 一切皆插件的自托管聊天机器人（Koishi 内核 / ChatLuna / 多平台插件兼容）",
   "packageManager": "yarn@4.1.1",
   "scripts": {

@@ -2843,11 +2843,11 @@ __metadata:
 
 "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web::locator=alisonbot%40workspace%3A.":
   version: 0.1.0
-  resolution: "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web#./local-plugins/koishi-plugin-alison-platform-web::hash=a6a467&locator=alisonbot%40workspace%3A."
+  resolution: "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web#./local-plugins/koishi-plugin-alison-platform-web::hash=5652a1&locator=alisonbot%40workspace%3A."
   peerDependencies:
     koishi: ^4.18.0
     koishi-plugin-chatluna: ^1.4.0
-  checksum: 10c0/4f3cafa3903ddbbfac6ebec491a6ef65ddc1310a336b4613b34471b66d19cc589db2607594d46e63aec692ca700be84eb539a37e7be4a259ac032499e5aced91
+  checksum: 10c0/cf6905cf1d71c877caae7176c7473a1ab9762bb8e0dc442ce0b47ed9df1e05e684e8a09b21e656ddc8d7f56ba84492503631f5a1fa7a188895583b3125141d94
   languageName: node
   linkType: hard
 

@@ -822,7 +822,8 @@ function apply(ctx, config) {
                 apiKey: prov.key,
                 temperature: settings.temperature,
                 maxTokens: settings.maxTokens,
-                ...(prov.endpoint ? { configuration: { baseURL: prov.endpoint } } : {})
+                ...(prov.endpoint ? { configuration: { baseURL: prov.endpoint } } : {}),
+                streamUsage: true // 让 OpenAI 兼容接口在流式末尾回传 usage（否则拿不到 token 统计）
               })
               model = typeof base.bindTools === 'function' ? base.bindTools(toolList) : base
               logger.info(`网页聊天直连模式：${prov.adapter} / ${modelName} + ${toolList.length} 个工具`)
@@ -843,7 +844,8 @@ function apply(ctx, config) {
         let full = ''
         let usage = null
         let conv = messages
-        for (let round = 0; round < 4; round++) {
+        const maxRounds = Math.max(4, Number(config.toolRounds) || 8)
+        for (let round = 0; round < maxRounds; round++) {
           let text = ''
           const calls = []
           const stream = await model.stream(conv, {
@@ -886,15 +888,37 @@ function apply(ctx, config) {
             conv.push(new ToolMessage({ content: String(s).slice(0, 4000), tool_call_id: c.id }))
             send('toolResult', { name: c.name, preview: String(s).slice(0, 400) })
           }
-          if (round === 3) full = '（工具调用轮次用尽，先停一下——跟我说一声继续）'
+          usedTools = true
+          if (round === maxRounds - 1) full = '（这一步我连着用了 ' + maxRounds + ' 轮工具还没收尾——跟我说一句「继续」我就接着做）'
         }
         if (!full && !toolList.length) full = ''
+        if (usedTools && !String(full || '').trim()) {
+          try {
+            const sum = await model.invoke(conv.concat([new HumanMessage('用一两句话总结你刚才做的事和结果：成没成、有什么要注意的、接下来还能做什么。')]))
+            full = String((sum && sum.content) || '').trim()
+          } catch { /* ignore */ }
+          if (!String(full || '').trim()) full = '✅ 手头这些工具活干完了（细节见上面的步骤）。要不要我接着做下一步？'
+        }
 
         list.push({ role: 'user', content: text, identity: identity.name, ts: Date.now() })
         list.push({ role: 'assistant', content: full, ts: Date.now() })
         history[conversationId] = list.slice(-200)
         flushHistory()
 
+        // 直连模式绕过了 ChatLuna，用量事件不会自己触发；这里补一次上报（issue #1）
+        if (usage && ctx.chatluna && typeof ctx.emit === 'function') {
+          try {
+            ctx.emit('chatluna/model-usage', {
+              source: 'alison-platform-web',
+              callType: 'chat',
+              platform: String(settings.model || '').split('/')[0] || 'unknown',
+              model: String(settings.model || ''),
+              chatPlatform: 'alison-web',
+              usageMetadata: usage
+            })
+            logger.debug('已上报本次模型用量')
+          } catch (e) { logger.warn('上报用量失败：' + e.message) }
+        }
         send('done', { text: full, usage })
       } catch (e) {
         logger.error(e)

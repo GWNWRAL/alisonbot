@@ -56,7 +56,7 @@ plugins:
   group:adapter:
     adapter-onebot:e493zw:
       selfId: "1000000001"
-      token: 
+      token: REPLACE_ME
   group:5lwh91:
     chatluna:vrb1f4:
       botNames:
