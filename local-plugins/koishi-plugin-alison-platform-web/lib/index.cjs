@@ -844,6 +844,7 @@ function apply(ctx, config) {
         let full = ''
         let usage = null
         let conv = messages
+        let usedTools = false
         const maxRounds = Math.max(4, Number(config.toolRounds) || 8)
         for (let round = 0; round < maxRounds; round++) {
           let text = ''

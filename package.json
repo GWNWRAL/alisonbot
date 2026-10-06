@@ -1,7 +1,7 @@
 {
   "name": "alisonbot",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "AlisonBot：微内核 + 一切皆插件的自托管聊天机器人（Koishi 内核 / ChatLuna / 多平台插件兼容）",
   "packageManager": "yarn@4.1.1",
   "scripts": {
@@ -23,8 +23,6 @@
     "koishi-plugin-alison-onboarding": "file:./local-plugins/koishi-plugin-alison-onboarding",
     "koishi-plugin-alison-persona": "file:./local-plugins/koishi-plugin-alison-persona",
     "koishi-plugin-alison-platform-web": "file:./local-plugins/koishi-plugin-alison-platform-web",
-    "koishi-plugin-alison-toolprompt": "file:./local-plugins/koishi-plugin-alison-toolprompt",
-    "koishi-plugin-alison-update": "file:./local-plugins/koishi-plugin-alison-update",
     "koishi-plugin-assets-local": "3.3.2",
     "koishi-plugin-chatluna": "1.4.0",
     "koishi-plugin-chatluna-character": "0.0.234",

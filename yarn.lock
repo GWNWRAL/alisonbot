@@ -1454,8 +1454,6 @@ __metadata:
     koishi-plugin-alison-onboarding: "file:./local-plugins/koishi-plugin-alison-onboarding"
     koishi-plugin-alison-persona: "file:./local-plugins/koishi-plugin-alison-persona"
     koishi-plugin-alison-platform-web: "file:./local-plugins/koishi-plugin-alison-platform-web"
-    koishi-plugin-alison-toolprompt: "file:./local-plugins/koishi-plugin-alison-toolprompt"
-    koishi-plugin-alison-update: "file:./local-plugins/koishi-plugin-alison-update"
     koishi-plugin-assets-local: "npm:3.3.2"
     koishi-plugin-chatluna: "npm:1.4.0"
     koishi-plugin-chatluna-character: "npm:0.0.234"
@@ -2843,29 +2841,11 @@ __metadata:
 
 "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web::locator=alisonbot%40workspace%3A.":
   version: 0.1.0
-  resolution: "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web#./local-plugins/koishi-plugin-alison-platform-web::hash=5652a1&locator=alisonbot%40workspace%3A."
+  resolution: "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web#./local-plugins/koishi-plugin-alison-platform-web::hash=8e4aca&locator=alisonbot%40workspace%3A."
   peerDependencies:
     koishi: ^4.18.0
     koishi-plugin-chatluna: ^1.4.0
-  checksum: 10c0/cf6905cf1d71c877caae7176c7473a1ab9762bb8e0dc442ce0b47ed9df1e05e684e8a09b21e656ddc8d7f56ba84492503631f5a1fa7a188895583b3125141d94
-  languageName: node
-  linkType: hard
-
-"koishi-plugin-alison-toolprompt@file:./local-plugins/koishi-plugin-alison-toolprompt::locator=alisonbot%40workspace%3A.":
-  version: 0.1.0
-  resolution: "koishi-plugin-alison-toolprompt@file:./local-plugins/koishi-plugin-alison-toolprompt#./local-plugins/koishi-plugin-alison-toolprompt::hash=92c003&locator=alisonbot%40workspace%3A."
-  peerDependencies:
-    koishi: ^4.18.0
-  checksum: 10c0/d434bc0e881a5b97882f2ce865db920ca8aae4613c0f0e1b73dc79d6f506ed436ddaaa31d1f2e5b9ea074b19ecd8fe58d386fc85634aa0d6ce9040991edfb535
-  languageName: node
-  linkType: hard
-
-"koishi-plugin-alison-update@file:./local-plugins/koishi-plugin-alison-update::locator=alisonbot%40workspace%3A.":
-  version: 0.1.0
-  resolution: "koishi-plugin-alison-update@file:./local-plugins/koishi-plugin-alison-update#./local-plugins/koishi-plugin-alison-update::hash=65c038&locator=alisonbot%40workspace%3A."
-  peerDependencies:
-    koishi: ^4.18.0
-  checksum: 10c0/8b9a2ea476c004a5804f9d788725c24c61d6129a8f2f973b6e55b891b6cd695e50213243ba52fd5b56d1d88386b76050a0095be30ff2364a7df17ccc4aa5bc96
+  checksum: 10c0/06ca87dd1b1b2633c9dbb5ec0948254498412c9c0045a24019e031ac53fe029b027b236d6ad930caa7ffdec4306e47612cb2bbbebcc4d2999c61279c41954ae6
   languageName: node
   linkType: hard
 
