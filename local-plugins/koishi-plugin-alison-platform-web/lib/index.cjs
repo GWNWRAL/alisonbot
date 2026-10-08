@@ -974,6 +974,9 @@ function apply(ctx, config) {
         try {
           const svc = ctx.root && ctx.root[cand]
           if (svc && typeof svc.restart === 'function') {
+          // 先排期、后重启：让响应先 flush 出去，否则页面只会看到连接断开（误报"重启失败"）
+          setTimeout(() => { try { svc.restart() } catch { /* ignore */ } }, 800)
+          return (koa.body = { ok: true, via: cand, restartScheduled: true })
             const r = await svc.restart()
             return (koa.body = { ok: true, via: cand, result: r || null })
           }
