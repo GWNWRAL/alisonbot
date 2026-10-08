@@ -499,7 +499,12 @@ async function apply(ctx, config) {
     const ai = (Array.isArray(f.adminIdentities) && f.adminIdentities.length ? f.adminIdentities : config.adminIdentities) || ['owner']
     return { ownerIds, adminIdentities: ai.map(String), fromFile: Array.isArray(f.ownerIds) && f.ownerIds.length > 0 }
   }
+  let webTurn = null
   const admin = {
+    /** 平台插件在干活前标记：这一回合是哪个网页身份、是不是管理员（下游插件据此放行） */
+    setWebTurn(identityId, isAdmin) { webTurn = { identityId: String(identityId || ""), isAdmin: !!isAdmin, at: Date.now() } },
+    /** 没有 session 的调用（网页直连）也认管理员：只认最近 2 分钟内的标记 */
+    isWebTurnAdmin(maxAgeMs) { return !!(webTurn && webTurn.isAdmin && Date.now() - webTurn.at < (maxAgeMs || 120000)) },
     info() {
       const c = adminCfg()
       const legacy = legacyOwnerIds()

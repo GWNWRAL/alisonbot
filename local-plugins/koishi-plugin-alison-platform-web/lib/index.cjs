@@ -137,6 +137,14 @@ function isAdminIdentity(ctx, identityId) {
   return true // 微内核不在（老版本）时不额外拦
 }
 
+/** 工具结果长度上限：超出就截断并在末尾明确标注（issue #2 的"读到一半就停"根因之一） */
+const TOOL_RESULT_MAX = 12000
+function capToolResult(s) {
+  const t = String(s == null ? '' : s)
+  if (t.length <= TOOL_RESULT_MAX) return t
+  return t.slice(0, TOOL_RESULT_MAX) + '\n\n…（这条结果太长被截断了：完整共 ' + t.length + ' 字，这里只有前 ' + TOOL_RESULT_MAX + ' 字。需要后面部分请分段读取，或改用更精确的查询参数。）'
+}
+
 function collectChatlunaTools(ctx, params) {
   try {
     const platform = ctx.chatluna && ctx.chatluna.platform
@@ -903,6 +911,10 @@ function apply(ctx, config) {
             const tool = toolMap.get(c.name)
             let out
             try {
+              try {
+                const _c = (ctx.root && ctx.root.alison) || ctx.alison
+                if (_c && _c.admin && _c.admin.setWebTurn) _c.admin.setWebTurn(identity.id, adminNow)
+              } catch { /* ignore */ }
               if (!adminNow && PRIVILEGED_TOOLS.includes(c.name)) {
                 out = '（只有管理员可以做这件事；当前身份「' + identity.name + '」没有权限，请让主人来做或先把该身份设为管理员）'
               } else {
@@ -910,7 +922,7 @@ function apply(ctx, config) {
               }
             } catch (e) { out = '工具执行失败：' + e.message }
             const s = typeof out === 'string' ? out : JSON.stringify(out)
-            conv.push(new ToolMessage({ content: String(s).slice(0, 4000), tool_call_id: c.id }))
+            conv.push(new ToolMessage({ content: capToolResult(s), tool_call_id: c.id }))
             send('toolResult', { name: c.name, preview: String(s).slice(0, 400) })
           }
           usedTools = true

@@ -48,11 +48,11 @@
 
 | 产物 | 大小 | SHA256 |
 |---|---:|---|
-| `Alison-Setup-0.0.1.exe` | 81.5 MB | `c4a6ca3bf1fbd3e4…` |
-| `Alison-Windows-便携版-0.0.1.zip` | 81.5 MB | `82d532e2d53b3c3b…` |
-| `Alison-macOS-arm64-0.0.1.zip` | 30.7 MB | `1f65be9470176368…` |
-| `Alison-macOS-x64-0.0.1.zip` | 32.3 MB | `a106fb4ec636a5d8…` |
-| `alisonbot-0.0.1-src.zip` | 1.7 MB | `e5bfacddc9954c0a…` |
+| `Alison-Setup-0.0.1.exe` | 81.5 MB | `3aa45b8c465a07cb…` |
+| `Alison-Windows-便携版-0.0.1.zip` | 81.5 MB | `71ae353ad7b90610…` |
+| `Alison-macOS-arm64-0.0.1.zip` | 30.7 MB | `93a7acfb4eb13a47…` |
+| `Alison-macOS-x64-0.0.1.zip` | 32.3 MB | `882bd333bfed5078…` |
+| `alisonbot-0.0.1-src.zip` | 1.7 MB | `b09cb2436bf4a1f0…` |
 
 （完整哈希见同目录 `*.sha256` 侧车。）
 

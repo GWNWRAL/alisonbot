@@ -463,6 +463,11 @@ function apply(ctx, config) {
     if (!platform || typeof platform.registerTool !== 'function') { logger.warn('registerTool 不可用，GitHub 工具未注册'); return }
     const isOwner = (session) => {
       if (!config.ownerOnly) return true
+      // 网页直连模式没有 session：认微内核记下的"这一回合的管理员身份"（issue #3）
+      try {
+        const _c = ctx.root && ctx.root.alison
+        if (!session && _c && _c.admin && _c.admin.isWebTurnAdmin && _c.admin.isWebTurnAdmin()) return true
+      } catch { /* ignore */ }
       // 统一管理员模型（issue #3）：先问微内核
       try {
         const core = ctx.root && ctx.root.alison

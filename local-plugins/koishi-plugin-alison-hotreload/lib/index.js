@@ -292,6 +292,11 @@ class State {
 
   isOwner(session) {
     if (!this.config.requireOwner) return true
+    // 网页直连模式没有 session：认微内核记下的"这一回合的管理员身份"（issue #3）
+    try {
+      const _c = this.ctx && this.ctx.root && this.ctx.root.alison
+      if (!session && _c && _c.admin && _c.admin.isWebTurnAdmin && _c.admin.isWebTurnAdmin()) return true
+    } catch { /* ignore */ }
     // 统一管理员模型（issue #3）：先问微内核
     try {
       const core = this.ctx && this.ctx.root && this.ctx.root.alison
