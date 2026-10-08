@@ -439,7 +439,8 @@ const Config = Schema.object({
   hotApply: Schema.boolean().default(true).description('允许通过接口/对话改配置后立即生效'),
   allowRemote: Schema.boolean().default(false).description('允许非本机访问微内核接口'),
   ownerIds: Schema.array(Schema.string()).default([]).description('管理员 QQ 号（留空则自动沿用各插件里已配的 ownerIds）'),
-  adminIdentities: Schema.array(Schema.string()).default(['owner']).description('管理员网页身份 id（默认 owner = 「我（主人）」）')
+  adminIdentities: Schema.array(Schema.string()).default(['owner']).description('管理员网页身份 id（默认 owner = 「我（主人）」）'),
+  snowlumaRoots: Schema.array(Schema.string()).default([]).description('SnowLuma 安装根目录（留空则自动扫描 C~G 盘的常见位置）')
 })
 
 async function apply(ctx, config) {
@@ -464,7 +465,7 @@ async function apply(ctx, config) {
   core.watchConfig()
 
   /* ---------------- 管理员（单一事实来源，issue #3） ---------------- */
-  const readYaml = () => { try { return require('js-yaml').load(fs.readFileSync(CONFIG_FILE, 'utf8')) || {} } catch { return {} } }
+  const readYaml = () => { try { return require('js-yaml').load(fs.readFileSync(configPath(), 'utf8')) || {} } catch { return {} } }
   /** 从其它插件里捞旧配置的 ownerIds（向后兼容，不写回、只当兜底） */
   const legacyOwnerIds = () => {
     const ids = new Set()
@@ -521,6 +522,33 @@ async function apply(ctx, config) {
       if (sess && typeof sess.authority === 'number' && sess.authority >= 4) return true
       return false
     }
+  }
+
+  /** 结构化写入某个插件条目（安全处理含 ":" 的条目名）：备份 → 改对象 → 回写 → 校验 → 失败自动回滚 */
+  function patchEntry(entryName, values) {
+    try {
+      const file = configPath()
+      const yaml = require("js-yaml")
+      const doc = yaml.load(fs.readFileSync(file, "utf8")) || {}
+      const into = (doc.plugins && typeof doc.plugins === "object") ? doc.plugins : doc
+      const short = String(entryName).split(":")[0]
+      let key = Object.keys(into).find((k) => {
+        const kk = k.replace(/^~/, "")
+        return kk === entryName || kk.split(":")[0] === short
+      })
+      if (!key) { key = entryName; into[key] = {} }
+      if (!into[key] || typeof into[key] !== "object") into[key] = {}
+      Object.assign(into[key], values)
+      const backup = file + ".bak-" + Date.now()
+      fs.copyFileSync(file, backup)
+      const text = yaml.dump(doc, { lineWidth: -1, noRefs: true, quotingType: "\"" })
+      fs.writeFileSync(file, text, "utf8")
+      try { yaml.load(fs.readFileSync(file, "utf8")) } catch (e) {
+        fs.copyFileSync(backup, file) // 写坏了就回滚
+        return { ok: false, error: "write_invalid", message: e.message, rolledBack: true }
+      }
+      return { ok: true, entry: key, backup, file }
+    } catch (e) { return { ok: false, error: "patch_failed", message: String(e && e.message || e) } }
   }
   core.admin = admin
   try { ctx.server.get('/alison/api/core/admins', (koa) => { koa.body = Object.assign({ ok: true }, admin.info()) }) } catch { /* ignore */ }
@@ -586,6 +614,68 @@ async function apply(ctx, config) {
     }
     serverCtx.server.get(base + '/status', wrap(async () => ({ ok: true, ...core.status() })))
         // ---- 管理员（issue #3）：单一事实来源就是 alison-core 自己的配置 ----
+        /* ---- SnowLuma 适配（issue #4）：扫描本机配置 + 一键预填 adapter-onebot ---- */
+        const mask = (s) => { const t = String(s || ''); return t.length <= 8 ? (t ? '****' : '（无）') : t.slice(0, 4) + '…' + t.slice(-2) }
+        serverCtx.server.get(base + '/snowluma/scan', wrap(async () => {
+          const roots = (config.snowlumaRoots && config.snowlumaRoots.length) ? config.snowlumaRoots.map(String) : []
+          const cands = []
+          if (!roots.length) {
+            for (const d of ['C', 'D', 'E', 'F', 'G']) for (const sub of ['ZA/QQbot', 'QQbot', 'SnowLuma', 'Program Files/SnowLuma', 'Program Files (x86)/SnowLuma']) roots.push(d + ':/' + sub)
+          }
+          for (const root of roots) {
+            let dirs = []
+            try { dirs = fs.readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory() && /^snowluma/i.test(e.name)).map((e) => path.join(root, e.name)) } catch { continue }
+            if (/^snowluma/i.test(path.basename(root))) dirs.push(root)
+            for (const dir of dirs) {
+              let files = []
+              try { files = fs.readdirSync(path.join(dir, 'config')).filter((f) => /^onebot_\d+\.json$/i.test(f)) } catch { continue }
+              for (const f of files) {
+                const p = path.join(dir, "config", f)
+                try {
+                  const j = JSON.parse(fs.readFileSync(p, "utf8"))
+                  const qq = String(j.selfId || (f.match(/onebot_(\d+)/) || [])[1] || "")
+                  const nets = j.networks || {}
+                  const wsClient = (nets.wsClients || [])[0] || {}
+                  const wsServer = (nets.wsServers || [])[0] || {}
+                  const httpServer = (nets.httpServers || [])[0] || {}
+                  const token = String(wsClient.accessToken || wsServer.accessToken || httpServer.accessToken || j.accessToken || "")
+                  const httpPort = httpServer.port || (j.http && j.http.port) || 3000
+                  const reverse = String(wsClient.url || (j.wsReverse && j.wsReverse.url) || j.url || "")
+                  cands.push({ file: p, dir, qq, qqMasked: mask(qq), tokenSet: !!token, tokenMasked: mask(token), httpPort, reverse })
+                } catch { /* 跳过读不动的 */ }
+              }
+            }
+          }
+          const selfId = (config.selfId || (ctx.config && ctx.config.selfId) || '')
+          return { ok: true, count: cands.length, candidates: cands, expectedUrl: 'ws://127.0.0.1:' + (5140) + '/onebot' }
+        }))
+        serverCtx.server.post(base + '/snowluma/apply', wrap(async (koa) => {
+
+          const b = koa.request.body || {}
+          if (!b.file || !fs.existsSync(String(b.file))) return { ok: false, error: "找不到 SnowLuma 配置文件" }
+          let j = {}
+          try { j = JSON.parse(fs.readFileSync(String(b.file), "utf8")) } catch (e) { return { ok: false, error: "解析失败：" + e.message } }
+          const qq = String(b.qq || j.selfId || (path.basename(String(b.file)).match(/onebot_(\d+)/) || [])[1] || "")
+          const _n = j.networks || {}; const token = String(((_n.wsClients || [])[0] || {}).accessToken || ((_n.wsServers || [])[0] || {}).accessToken || ((_n.httpServers || [])[0] || {}).accessToken || j.accessToken || "")
+          const doc = readYaml()
+          let entry = null
+          ;(function findAdapter(n) {
+            if (!n || typeof n !== "object" || entry) return
+            for (const k of Object.keys(n)) {
+              const kk = k.replace(/^~/, "")
+              if (kk.split(":")[0] === "adapter-onebot") { entry = kk; return }
+              if (n[k] && typeof n[k] === "object") findAdapter(n[k])
+            }
+          })(doc)
+          if (!entry) entry = "adapter-onebot:snowluma"
+          const writes = []
+          const put = (k, v) => writes.push(core.applyConfig({ dotted: entry + "." + k, value: v, reason: "snowluma:" + k }))
+          put("protocol", "ws")
+          put("path", "/onebot")
+          put("selfId", qq)
+          if (token) put("token", token)
+          return { ok: writes.every((w) => w && w.ok), entry, qqMasked: mask(qq), tokenMasked: mask(token), message: "已写入 " + entry + "；请确认 SnowLuma 里的反向 WS 地址是 ws://127.0.0.1:<AlisonBot 端口>/onebot，然后两边各重启一次。" }
+        }))
         serverCtx.server.get(base + '/admins', wrap(async () => Object.assign({ ok: true }, admin.info())))
         serverCtx.server.post(base + '/admins', wrap(async (koa) => {
           const b = koa.request.body || {}
@@ -599,9 +689,11 @@ async function apply(ctx, config) {
           })(doc.plugins)
           if (!entry) return { ok: false, error: '配置里找不到 alison-core 条目' }
           const writes = []
-          if (Array.isArray(b.ownerIds)) writes.push(core.applyConfig({ dotted: entry + '.ownerIds', value: b.ownerIds.map(String), reason: 'admins:ownerIds' }))
-          if (Array.isArray(b.adminIdentities)) writes.push(core.applyConfig({ dotted: entry + '.adminIdentities', value: b.adminIdentities.map(String), reason: 'admins:identities' }))
-          return { ok: writes.every((w) => w && w.ok), writes, info: admin.info() }
+          const vals = {}
+          if (Array.isArray(b.ownerIds)) vals.ownerIds = b.ownerIds.map(String)
+          if (Array.isArray(b.adminIdentities)) vals.adminIdentities = b.adminIdentities.map(String)
+          const pr = patchEntry(entry, vals)
+          return pr.ok ? { ok: true, entry: pr.entry, backup: pr.backup, info: admin.info() } : pr
         }))
     serverCtx.server.get(base + '/config', wrap(async () => ({ ok: true, text: readText(configPath()), file: configPath() })))
     serverCtx.server.post(base + '/config', wrap(async (koa) => {

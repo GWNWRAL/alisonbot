@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  syntax-and-guard:
+    name: 语法检查 + 防泄漏守卫（Node ${{ matrix.node }}）
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: 语法检查（所有插件入口文件）
+        run: |
+          set -e
+          n=0
+          for f in $(git ls-files "local-plugins/*/lib/*.cjs" "local-plugins/*/lib/*.js" "local-plugins/*/lib/**/*.js" | sort -u); do
+            node --check "$f"
+            n=$((n+1))
+          done
+          echo "已检查 $n 个文件"
+
+      - name: 防泄漏守卫（Key / 本机路径 / 高熵 token）
+        run: node tools/ci-guard.mjs
+
+      - name: 插件自测（存在就尽力跑，失败不作为门槛）
+        continue-on-error: true
+        run: |
+          for f in $(git ls-files "local-plugins/*/test/*.cjs"); do
+            echo "--- $f"
+            node "$f" || true
+          done

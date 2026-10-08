@@ -17,7 +17,7 @@ fi
 
 PORT="$(grep -E '^[[:space:]]+port:' workspace/alison.yml | head -1 | tr -dc '0-9')"
 PORT="${PORT:-5140}"
-URL="http://127.0.0.1:${PORT}/alison"
+URL="http://127.0.0.1:${PORT}/ice"
 
 echo "============================================"
 echo " Alison 启动中"

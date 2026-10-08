@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # 只提「安全更新」，不天天提版本升级（本项目依赖多为精确版本）
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    labels: [dependencies, security]
+    allow:
+      - dependency-name: "*"
+        update-types: [security]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels: [dependencies, ci]

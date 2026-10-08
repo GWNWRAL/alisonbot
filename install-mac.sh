@@ -56,6 +56,5 @@ echo
 echo "✅ 安装完成。下一步："
 echo "   1. 也可以直接双击启动，在网页里按引导填 API Key（或改 workspace/alison.yml）"
 echo "   2. 双击「启动 Alison.command」"
-echo "   3. 浏览器会自动打开 http://127.0.0.1:5140/alison"
-echo "   4. 若双击提示"未打开，因为来自身份不明的开发者"，右键 → 打开 即可"
+echo "   3. 浏览器会自动打开 http://127.0.0.1:5140/ice"
 echo
