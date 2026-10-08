@@ -463,12 +463,17 @@ function apply(ctx, config) {
     if (!platform || typeof platform.registerTool !== 'function') { logger.warn('registerTool 不可用，GitHub 工具未注册'); return }
     const isOwner = (session) => {
       if (!config.ownerOnly) return true
+      // 统一管理员模型（issue #3）：先问微内核
+      try {
+        const core = ctx.root && ctx.root.alison
+        if (core && core.admin && session) return core.admin.isAdmin({ session, userId: session.userId })
+      } catch { /* ignore */ }
       try {
         const selfop = require(path.join(APP_DIR, 'node_modules', 'koishi-plugin-alison-hotreload', 'lib', 'index.js'))
         const owners = (selfop && selfop.__owners) || []
         if (owners.length) return owners.includes(String(session && session.userId))
       } catch { /* ignore */ }
-      return true   // 拿不到 owner 配置时不额外拦截（QQ 侧 authority 会再拦一层）
+      return true
     }
     for (const t of makeTools(ctx, config)) {
       chatCtx.effect(() => platform.registerTool(t.name, {

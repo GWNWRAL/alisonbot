@@ -1,4 +1,4 @@
-﻿# 发布 alisonbot 到 GitHub（建仓库 + 推源码 + 发 v<版本> Release + 逐项校验）
+# 发布 alisonbot 到 GitHub（建仓库 + 推源码 + 发 v<版本> Release + 逐项校验）
 #
 # 用法（在 release\alisonbot 目录里执行）：
 #   pwsh -File tools\publish.ps1 -DryRun        # 只看会做什么，不做任何写操作
@@ -87,7 +87,7 @@ if ($exists) {
 } else {
   $body = @{
     name = $Repo; private = $false
-    description = 'ICE：Koishi + ChatLuna 角色扮演机器人（自定义 Web 控制台 / 自治能力 / Koishi + AstrBot 插件兼容）'
+    description = 'AlisonBot：微内核 + 一切皆插件（UI / 对话平台 / 人设 / 引导 / 自治都是插件）—— 基于 Koishi + ChatLuna 的自托管 AI 聊天机器人，支持热更新、插件自装自修与多平台适配（OneBot / SnowLuma / MCP / AstrBot / NoneBot2）'
     has_issues = $true; has_wiki = $false; has_projects = $false
   } | ConvertTo-Json
   Invoke-RestMethod "https://api.github.com/user/repos" -Method Post -Headers $headers -Body $body -ContentType 'application/json' | Out-Null

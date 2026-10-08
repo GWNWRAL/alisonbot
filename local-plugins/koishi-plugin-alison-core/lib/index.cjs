@@ -437,7 +437,9 @@ const Config = Schema.object({
   watch: Schema.boolean().default(true).description('监听 alison.yml 变化并热应用（保存即生效）'),
   watchPlugins: Schema.boolean().default(true).description('监听 plugins/alison 目录（丢文件即热加载）'),
   hotApply: Schema.boolean().default(true).description('允许通过接口/对话改配置后立即生效'),
-  allowRemote: Schema.boolean().default(false).description('允许非本机访问微内核接口')
+  allowRemote: Schema.boolean().default(false).description('允许非本机访问微内核接口'),
+  ownerIds: Schema.array(Schema.string()).default([]).description('管理员 QQ 号（留空则自动沿用各插件里已配的 ownerIds）'),
+  adminIdentities: Schema.array(Schema.string()).default(['owner']).description('管理员网页身份 id（默认 owner = 「我（主人）」）')
 })
 
 async function apply(ctx, config) {
@@ -460,6 +462,80 @@ async function apply(ctx, config) {
   const env = { core, root: ROOT, appDir: APP_DIR, logger, config, defineAlisonPlugin }
 
   core.watchConfig()
+
+  /* ---------------- 管理员（单一事实来源，issue #3） ---------------- */
+  const readYaml = () => { try { return require('js-yaml').load(fs.readFileSync(CONFIG_FILE, 'utf8')) || {} } catch { return {} } }
+  /** 从其它插件里捞旧配置的 ownerIds（向后兼容，不写回、只当兜底） */
+  const legacyOwnerIds = () => {
+    const ids = new Set()
+    const doc = readYaml()
+    ;(function walk(n) {
+      if (!n || typeof n !== 'object') return
+      for (const [k, v] of Object.entries(n)) {
+        if (/^(ownerIds|allowUserIds|adminIds)$/i.test(k.replace(/^~/, '')) && Array.isArray(v)) for (const x of v) if (String(x)) ids.add(String(x))
+        if (v && typeof v === 'object') walk(v)
+      }
+    })(doc.plugins)
+    return [...ids]
+  }
+  /** 管理员名单：每次调用都读配置文件里的 alison-core 条目（改完即时生效，不吃闭包旧值） */
+  const coreEntryCfg = () => {
+    try {
+      const doc = readYaml()
+      let hit = null
+      ;(function walk(n) {
+        if (!n || typeof n !== 'object' || hit) return
+        for (const [k, v] of Object.entries(n)) {
+          if (k.replace(/^~/, '').split(':')[0] === 'alison-core' && v && typeof v === 'object') { hit = v; return }
+          if (v && typeof v === 'object') walk(v)
+        }
+      })(doc.plugins)
+      return hit || {}
+    } catch { return {} }
+  }
+  const adminCfg = () => {
+    const f = coreEntryCfg()
+    const ownerIds = (Array.isArray(f.ownerIds) && f.ownerIds.length ? f.ownerIds : (config.ownerIds || [])).map(String).filter(Boolean)
+    const ai = (Array.isArray(f.adminIdentities) && f.adminIdentities.length ? f.adminIdentities : config.adminIdentities) || ['owner']
+    return { ownerIds, adminIdentities: ai.map(String), fromFile: Array.isArray(f.ownerIds) && f.ownerIds.length > 0 }
+  }
+  const admin = {
+    info() {
+      const c = adminCfg()
+      const legacy = legacyOwnerIds()
+      return { ownerIds: c.ownerIds.length ? c.ownerIds : legacy, adminIdentities: c.adminIdentities, fromCore: c.ownerIds.length > 0, legacy }
+    },
+    /** isAdmin({identityId}) / isAdmin({userId}) / isAdmin({session}) / isAdmin('12345') */
+    isAdmin(arg) {
+      const c = adminCfg()
+      if (arg && typeof arg === 'object' && arg.identityId != null) return c.adminIdentities.includes(String(arg.identityId))
+      const owners = c.ownerIds.length ? c.ownerIds : legacyOwnerIds()
+      const id = arg && typeof arg === 'object' ? (arg.userId || (arg.session && arg.session.userId)) : arg
+      if (id && owners.map(String).includes(String(id))) return true
+      const sess = arg && typeof arg === 'object' ? arg.session : null
+      if (sess && typeof sess.authority === 'number' && sess.authority >= 4) return true
+      return false
+    }
+  }
+  core.admin = admin
+  try { ctx.server.get('/alison/api/core/admins', (koa) => { koa.body = Object.assign({ ok: true }, admin.info()) }) } catch { /* ignore */ }
+  try {
+    ctx.server.post('/alison/api/core/admins', (koa) => {
+      const b = koa.request.body || {}
+      const doc = readYaml()
+      let entry = null
+      ;(function walk(n) {
+        if (!n || typeof n !== 'object' || entry) return
+        for (const k of Object.keys(n)) { if (k.replace(/^~/, '').split(':')[0] === 'alison-core') { entry = k.replace(/^~/, ''); return } }
+      })(doc.plugins)
+      if (!entry) return (koa.body = { ok: false, error: '配置里找不到 alison-core 条目' })
+      const writes = []
+      if (Array.isArray(b.ownerIds)) writes.push(core.applyConfig({ dotted: entry + '.ownerIds', value: b.ownerIds.map(String), reason: 'admins:ownerIds' }))
+      if (Array.isArray(b.adminIdentities)) writes.push(core.applyConfig({ dotted: entry + '.adminIdentities', value: b.adminIdentities.map(String), reason: 'admins:identities' }))
+      koa.body = { ok: writes.every((w) => w && w.ok), writes, info: admin.info() }
+    })
+  } catch { /* ignore */ }
+
   ctx.on('dispose', () => { for (const w of core.watchers) { try { w.close() } catch { /* ignore */ } } })
 
   // 启动时扫描并加载 workspace/plugins/alison/ 下的插件
@@ -504,6 +580,24 @@ async function apply(ctx, config) {
       try { koa.body = await fn(koa) } catch (e) { koa.status = 500; koa.body = { ok: false, error: e.message } }
     }
     serverCtx.server.get(base + '/status', wrap(async () => ({ ok: true, ...core.status() })))
+        // ---- 管理员（issue #3）：单一事实来源就是 alison-core 自己的配置 ----
+        serverCtx.server.get(base + '/admins', wrap(async () => Object.assign({ ok: true }, admin.info())))
+        serverCtx.server.post(base + '/admins', wrap(async (koa) => {
+          const b = koa.request.body || {}
+          const doc = readYaml()
+          let entry = null
+          ;(function findEntry(n) {
+            if (!n || typeof n !== 'object' || entry) return
+            for (const k of Object.keys(n)) {
+              if (k.replace(/^~/, '').split(':')[0] === 'alison-core') { entry = k.replace(/^~/, ''); return }
+            }
+          })(doc.plugins)
+          if (!entry) return { ok: false, error: '配置里找不到 alison-core 条目' }
+          const writes = []
+          if (Array.isArray(b.ownerIds)) writes.push(core.applyConfig({ dotted: entry + '.ownerIds', value: b.ownerIds.map(String), reason: 'admins:ownerIds' }))
+          if (Array.isArray(b.adminIdentities)) writes.push(core.applyConfig({ dotted: entry + '.adminIdentities', value: b.adminIdentities.map(String), reason: 'admins:identities' }))
+          return { ok: writes.every((w) => w && w.ok), writes, info: admin.info() }
+        }))
     serverCtx.server.get(base + '/config', wrap(async () => ({ ok: true, text: readText(configPath()), file: configPath() })))
     serverCtx.server.post(base + '/config', wrap(async (koa) => {
       if (!config.hotApply) return { ok: false, error: '热更新已被插件配置关闭' }

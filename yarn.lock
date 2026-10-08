@@ -2796,28 +2796,28 @@ __metadata:
 
 "koishi-plugin-alison-core@file:./local-plugins/koishi-plugin-alison-core::locator=alisonbot%40workspace%3A.":
   version: 0.0.1
-  resolution: "koishi-plugin-alison-core@file:./local-plugins/koishi-plugin-alison-core#./local-plugins/koishi-plugin-alison-core::hash=f42e49&locator=alisonbot%40workspace%3A."
+  resolution: "koishi-plugin-alison-core@file:./local-plugins/koishi-plugin-alison-core#./local-plugins/koishi-plugin-alison-core::hash=e1e00a&locator=alisonbot%40workspace%3A."
   peerDependencies:
     koishi: ^4.18.0
-  checksum: 10c0/2360dd9f291c7175768e522a91d1cc993de649bc5b674ca18751e6c9a87e9b97174c17e8d49e8d8d62fbaa152935c054561eda0ec6a7eeee7c663e90a303e46b
+  checksum: 10c0/a63e78c325957ca166e86a929cb00c9a11dd01b7b2e4feec212faa39fb80dfc6ec645aeac99fd24cab90e185e1f17981d19129167432ce3e9457b31cf0a66dc1
   languageName: node
   linkType: hard
 
 "koishi-plugin-alison-github@file:./local-plugins/koishi-plugin-alison-github::locator=alisonbot%40workspace%3A.":
   version: 0.0.1
-  resolution: "koishi-plugin-alison-github@file:./local-plugins/koishi-plugin-alison-github#./local-plugins/koishi-plugin-alison-github::hash=e2b644&locator=alisonbot%40workspace%3A."
+  resolution: "koishi-plugin-alison-github@file:./local-plugins/koishi-plugin-alison-github#./local-plugins/koishi-plugin-alison-github::hash=871960&locator=alisonbot%40workspace%3A."
   peerDependencies:
     koishi: ^4.18.0
-  checksum: 10c0/0a49bafe0b548652b5cdc14f8c1da27c927d57ac453dc4cbc27c50225f74a47b278d73984ef088e77369dd28c6cc0aba4e66165ddf4aab6c210054bc08cd39f3
+  checksum: 10c0/765f92a83e92e6a33e188ad088eb4564d1b056f382f813d13df223aa98a7498dfd6544a43a624782219b9e19102c9dfd4a2a114303968047d310e72100d4ac0f
   languageName: node
   linkType: hard
 
 "koishi-plugin-alison-hotreload@file:./local-plugins/koishi-plugin-alison-hotreload::locator=alisonbot%40workspace%3A.":
   version: 0.1.0
-  resolution: "koishi-plugin-alison-hotreload@file:./local-plugins/koishi-plugin-alison-hotreload#./local-plugins/koishi-plugin-alison-hotreload::hash=5cc9c7&locator=alisonbot%40workspace%3A."
+  resolution: "koishi-plugin-alison-hotreload@file:./local-plugins/koishi-plugin-alison-hotreload#./local-plugins/koishi-plugin-alison-hotreload::hash=db0713&locator=alisonbot%40workspace%3A."
   peerDependencies:
     koishi: ^4.18.0
-  checksum: 10c0/e399bc3632d931a9fb7f5547338d635c178289e08972b227ee883c9e4f4b6d9013aa03914a7af6fb73d805f4fcd4b78925029b43d8046e58ab95624df718f10f
+  checksum: 10c0/e845e7a413d2cae33e5f86359d99901fb0b16cd0c26533bdb0bdca1fcf6b1455c7c5f89d753c42c1f228d765f60584b48d6d9126f527832e0dece1189f1ec94d
   languageName: node
   linkType: hard
 
@@ -2841,11 +2841,11 @@ __metadata:
 
 "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web::locator=alisonbot%40workspace%3A.":
   version: 0.1.0
-  resolution: "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web#./local-plugins/koishi-plugin-alison-platform-web::hash=8e4aca&locator=alisonbot%40workspace%3A."
+  resolution: "koishi-plugin-alison-platform-web@file:./local-plugins/koishi-plugin-alison-platform-web#./local-plugins/koishi-plugin-alison-platform-web::hash=bbbd25&locator=alisonbot%40workspace%3A."
   peerDependencies:
     koishi: ^4.18.0
     koishi-plugin-chatluna: ^1.4.0
-  checksum: 10c0/06ca87dd1b1b2633c9dbb5ec0948254498412c9c0045a24019e031ac53fe029b027b236d6ad930caa7ffdec4306e47612cb2bbbebcc4d2999c61279c41954ae6
+  checksum: 10c0/ff05094a20b5658d11ba82ef9bcbab6a21bf3f3867d72174c174aecf5c46b233e5213fff8487addad3325946ab252fde3346cebfc7ce273ce30bf9241096c911
   languageName: node
   linkType: hard
 

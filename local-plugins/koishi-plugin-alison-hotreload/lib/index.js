@@ -292,6 +292,14 @@ class State {
 
   isOwner(session) {
     if (!this.config.requireOwner) return true
+    // 统一管理员模型（issue #3）：先问微内核
+    try {
+      const core = this.ctx && this.ctx.root && this.ctx.root.alison
+      if (core && core.admin) {
+        const info = core.admin.info()
+        if (info.fromCore || info.legacy.length) return core.admin.isAdmin({ session, userId: State.userIdOf(session) })
+      }
+    } catch { /* ignore */ }
     const owners = (this.config.ownerIds || []).map(String).filter(Boolean)
     const id = State.userIdOf(session)
     if (id && owners.includes(id)) return true

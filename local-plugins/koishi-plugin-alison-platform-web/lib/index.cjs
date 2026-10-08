@@ -123,6 +123,20 @@ async function detectIdentities(ctx) {
 
 /* ---------------- ChatLuna 工具收集（网页聊天也能"自己动手"） ---------------- */
 /** 把 ChatLuna 平台已注册的工具实例化拿出来（自治 / GitHub / 热更新 / MCP / 官方工具） */
+/** 只有管理员能用的工具（issue #3） */
+const PRIVILEGED_TOOLS = [
+  'alison_config', 'alison_plugin', 'alison_repair', 'alison_restart', 'alison_reload',
+  'alison_selfedit', 'alison_install_plugin', 'alison_update', 'alison_toolprompt', 'alison_persona'
+]
+/** 问微内核：这个网页身份是不是管理员 */
+function isAdminIdentity(ctx, identityId) {
+  try {
+    const core = (ctx.root && ctx.root.alison) || ctx.alison
+    if (core && core.admin) return !!core.admin.isAdmin({ identityId })
+  } catch { /* ignore */ }
+  return true // 微内核不在（老版本）时不额外拦
+}
+
 function collectChatlunaTools(ctx, params) {
   try {
     const platform = ctx.chatluna && ctx.chatluna.platform
@@ -806,7 +820,13 @@ function apply(ctx, config) {
           )
         )
 
-        const toolList = collectChatlunaTools(ctx)
+        let toolList = collectChatlunaTools(ctx)
+        const adminNow = isAdminIdentity(ctx, identity.id)
+        if (!adminNow && toolList.length) {
+          const before = toolList.length
+          toolList = toolList.filter((t) => !PRIVILEGED_TOOLS.includes(t.name))
+          if (before !== toolList.length) logger.info('非管理员身份「' + identity.name + '」：隐藏了 ' + (before - toolList.length) + ' 个特权工具')
+        }
         const toolMap = new Map(toolList.map((t) => [t.name, t]))
         let model = null
         // 直连模式：OpenAI 兼容平台直接建模型 + 自己绑工具（ChatLuna 的包装器会用它自己那套工具，绑上去不生效）
@@ -883,7 +903,11 @@ function apply(ctx, config) {
             const tool = toolMap.get(c.name)
             let out
             try {
-              out = tool ? await tool.invoke(safeJson(c.args)) : `（没有名为 ${c.name} 的工具，别假装调用）`
+              if (!adminNow && PRIVILEGED_TOOLS.includes(c.name)) {
+                out = '（只有管理员可以做这件事；当前身份「' + identity.name + '」没有权限，请让主人来做或先把该身份设为管理员）'
+              } else {
+                out = tool ? await tool.invoke(safeJson(c.args)) : `（没有名为 ${c.name} 的工具，别假装调用）`
+              }
             } catch (e) { out = '工具执行失败：' + e.message }
             const s = typeof out === 'string' ? out : JSON.stringify(out)
             conv.push(new ToolMessage({ content: String(s).slice(0, 4000), tool_call_id: c.id }))

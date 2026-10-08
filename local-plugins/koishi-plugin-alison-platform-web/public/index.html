@@ -430,10 +430,48 @@ async function restartMe(){
     }, 1000);
   }catch(e){ alert('重启失败：' + e.message); }
 }
+/* ---------------- 管理员（issue #3）：单一事实来源在微内核配置里 ---------------- */
+async function admLoad(){
+  const box = $('#adm_idents');
+  if(!box) return;
+  try{
+    const d = await api('/api/core/admins');
+    const ids = (BOOT && BOOT.settings && BOOT.settings.identities) || [];
+    const adm = d.adminIdentities || [];
+    box.innerHTML = ids.map((it)=>'<label style="display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-adm="'+esc(it.id)+'"'+(adm.includes(it.id)?' checked':'')+' /> '+esc(it.name)+'</label>').join('');
+    $('#adm_qids').value = (d.ownerIds || []).join('\n');
+    $('#adm_msg').textContent = d.fromCore
+      ? '当前管理员名单来自微内核配置 ✓（改动即热生效）'
+      : '微内核里还没设置，正在沿用各插件里的旧设置：' + (((d.legacy||[]).join('、')) || '（无）');
+  }catch(e){ $('#adm_msg').textContent = '读取失败：' + e.message }
+}
+async function admSave(){
+  const idents = [].slice.call(document.querySelectorAll('#adm_idents input[data-adm]')).filter((x)=>x.checked).map((x)=>x.dataset.adm);
+  const qids = String($('#adm_qids').value || '').split(/[\s,，;；]+/).map((s)=>s.trim()).filter(Boolean);
+  $('#adm_msg').textContent = '保存中…';
+  try{
+    const r = await api('/api/core/admins', { ownerIds: qids, adminIdentities: idents });
+    $('#adm_msg').textContent = r.ok ? ('✓ 已保存并热生效（QQ 管理员 ' + qids.length + ' 个，网页身份 ' + idents.length + ' 个）') : ('✗ ' + (r.error || '保存失败'));
+    await admLoad();
+  }catch(e){ $('#adm_msg').textContent = '✗ ' + e.message }
+}
 async function renderSettings(){
   const p = $('#panel');
   const s = BOOT.settings, sys = BOOT.system || {};
   p.innerHTML = `
+    <div class="card">
+      <div class="h">管理员</div>
+      <div class="low">只有管理员能在网页里让她改配置 / 装插件 / 重启自己。「我（主人）」默认是管理员。</div>
+      <label class="f" style="margin-top:8px">哪些网页身份是管理员</label>
+      <div id="adm_idents" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+      <label class="f" style="margin-top:8px">管理员 QQ 号（每行一个，或逗号分隔）</label>
+      <textarea id="adm_qids" rows="2" placeholder="123456789"></textarea>
+      <div class="row" style="margin-top:6px">
+        <div><button class="btn sm" id="adm_save">保存</button></div>
+        <div><button class="btn ghost sm" id="adm_reload">重新读取</button></div>
+      </div>
+      <div id="adm_msg" class="low" style="margin-top:6px"></div>
+    </div>
     <div class="card">
       <div class="h">模型与 API Key</div>
       <div class="row">
@@ -500,6 +538,9 @@ async function renderSettings(){
   renderIdents();
   loadModelOptions();
   akLoadProviders();
+  admLoad();
+  if($('#adm_save')) $('#adm_save').onclick = admSave;
+  if($('#adm_reload')) $('#adm_reload').onclick = admLoad;
   if($('#ak_save')) $('#ak_save').onclick = () => akSave(false);
   if($('#ak_test')) $('#ak_test').onclick = () => akSave(true);
   if($('#ak_fill')) $('#ak_fill').onclick = async () => {
